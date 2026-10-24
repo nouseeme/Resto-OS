@@ -8,7 +8,7 @@ import { prepareMenuImage, removeMenuImage } from './media.js';
 import { openStore, assert, id, now, tick, placeOrder, operate, passwordHash, passwordMatches } from './store.js';
 import { PORTAL_PATH, STAFF_PATH } from '../shared/routes.js';
 import { WORKSPACE_ROLES } from '../shared/workspaces.js';
-import { parseMenuFile, previewMenuImport, commitMenuImport } from './menu-import.js';
+import { parseMenuFile, previewMenuImport, commitMenuImport, menuTemplate } from './menu-import.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const cloud = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY && !process.env.RESTO_DB);
@@ -166,6 +166,13 @@ app.post('/api/action',async(req,res)=>{
     }
     throw error;
   }
+});
+app.get('/api/menu-template',async(req,res)=>{
+  assert(req.actor?.role==='manager','Template katalog hanya tersedia di ruang Manajemen.',403);
+  const file=await menuTemplate(req.state.menu);
+  res.set('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.set('Content-Disposition','attachment; filename="template-menu-restoOS.xlsx"');
+  res.send(file);
 });
 app.post('/api/menu-import/:step',async(req,res)=>{
   assert(req.actor?.role==='manager','Impor katalog hanya tersedia di ruang Manajemen.',403);

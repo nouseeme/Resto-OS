@@ -69,7 +69,12 @@ test('HTTP access and transaction boundaries across anonymous browsers and staff
   assert.equal((await call('waiter','workspace',{role:'manager'})).status,200);
   assert.equal((await call('waiter','orders',{...body,name:'Blocked',requestId:randomUUID()})).status,403);
   assert.equal((await call('waiter','action',{action:'pay',orderId:next.data.orderId,method:'Tunai'})).status,403);
-  const workbook=new ExcelJS.Workbook();const sheet=workbook.addWorksheet('Menu');sheet.addRow(MENU_COLUMNS);sheet.addRow(['Es teh melati','Minuman',19000,'Baru','Ya']);sheet.addRow(['Menu HTTP','Minuman',21000,'','Ya']);
+  assert.equal((await fetch(base+'/api/menu-template')).status,403);
+  const templateResponse=await fetch(base+'/api/menu-template',{headers:{Cookie:jar.waiter}});
+  assert.equal(templateResponse.status,200);
+  const templateBook=new ExcelJS.Workbook();await templateBook.xlsx.load(Buffer.from(await templateResponse.arrayBuffer()));
+  assert.ok(templateBook.getWorksheet('Menu').getRow(1).values.includes('Deskripsi [en]'));
+  const workbook=new ExcelJS.Workbook();const sheet=workbook.addWorksheet('Menu');sheet.addRow([...MENU_COLUMNS,'Deskripsi [en]','Deskripsi [tr]']);sheet.addRow(['Es teh melati','Minuman',19000,'Baru','Ya','English tea','']);sheet.addRow(['Menu HTTP','Minuman',21000,'Default HTTP','Ya','','Türkçe HTTP']);
   const file=Buffer.from(await workbook.xlsx.writeBuffer()).toString('base64');
   assert.equal((await call('a','menu-import/preview',{file})).status,403);
   assert.equal((await call('chef','menu-import/preview',{file})).status,403);
@@ -77,6 +82,10 @@ test('HTTP access and transaction boundaries across anonymous browsers and staff
   const commitBody={file,catalogRevision:preview.data.catalogRevision,requestId:randomUUID()};
   assert.equal((await call('waiter','menu-import/commit',commitBody)).status,200);
   assert.equal((await call('waiter','menu-import/commit',commitBody)).status,200);
+  const translatedMenu=(await call('a','state')).data.menu;
+  assert.equal(translatedMenu.find(m=>m.name==='Es teh melati').descriptionTranslations.en,'English tea');
+  assert.equal(translatedMenu.find(m=>m.name==='Menu HTTP').descriptionTranslations.tr,'Türkçe HTTP');
+  assert.equal(translatedMenu.find(m=>m.name==='Menu HTTP').description,'Default HTTP');
   const imported=(await call('waiter','state')).data;
   assert.equal(imported.menu.length,9);assert.equal(imported.menu.find(m=>m.id===teaId).price,19000);assert.equal(imported.orders[0].units[0].price,12000);
   await call('m','logout',{});

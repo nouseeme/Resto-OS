@@ -42,3 +42,6 @@ Target sentuh 44px, fokus keyboard, label status eksplisit, reduced motion, layo
 
 ## Initial state
 Instalasi baru dimulai dengan katalog, transaksi, dan akun kosong. Identitas awal adalah Restoran Anda dengan mata uang IDR. Data sintetis hanya berada pada fixture tes.
+
+## Manual description languages
+Excel accepts optional Deskripsi [language-code] columns. Deskripsi is the Indonesian default; translations affect descriptions only. Empty/omitted translations preserve existing values. The portal language selector uses the union of stored languages and falls back per menu to Indonesian without filtering menus out. Language count is flexible within file limits.

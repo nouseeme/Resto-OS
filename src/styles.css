@@ -80,3 +80,5 @@
 /* Keep image controls within the existing menu dialog on narrow screens. */
 .menu-photo-preview{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0}
 .menu-photo-preview img{width:160px;max-width:100%;aspect-ratio:4/3;object-fit:cover}
+
+.menu-language{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-size:12px}.menu-language select{min-height:44px;max-width:100%;padding:8px 12px;background:var(--paper,#faf7f0);color:inherit;border:1px solid var(--line);font:inherit}

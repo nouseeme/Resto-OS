@@ -79,3 +79,5 @@ See [deployment and operations](docs/PRODUCTION.md) for Supabase, Vercel, backup
 ## Current limits
 
 There is no offline mode, payment gateway, inventory, refund workflow, or background push notification service. Abuse limits are an initial configuration, not a full network defense. Cloud reads currently reconstruct a complete backend snapshot; larger histories need scoped queries and pagination. Verify kitchen audio and touch behavior on real devices before relying on them in service.
+
+Menu descriptions support optional Excel columns such as `Deskripsi [en]`, `Deskripsi [tr]`, and `Deskripsi [ar]` after the five base columns. `Deskripsi` is the Indonesian default. Only descriptions are localized; names, categories and prices stay the same. There is no application language-count limit within the 500 KB/1,000-row import limits. Empty or omitted translations preserve existing values. The portal lists every matching menu regardless of language and falls back per item to its default description. Download the multilingual template from the import dialog.
