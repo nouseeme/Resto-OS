@@ -28,6 +28,6 @@ export function TransactionDetail({data,tabId,onClose,act,disabled,add,pay,cance
 
 export function KitchenWorkload({orders}) {
   const rows=kitchenDemand(orders),total=rows.reduce((n,r)=>n+r.total,0);
-  const contents=<><p className="workload-caption">Termasuk yang menunggu diterima. Tidak termasuk siap, diantar, atau dibatalkan.</p>{rows.length?<><div className="workload-labels"><span>Menu</span><span>Menunggu</span><span>Dimasak</span></div>{rows.map(r=><div className="workload-row" key={r.menuId}><div><strong>{r.name}</strong><small>{r.total} porsi perlu disiapkan</small></div><b>{r.waiting}</b><b>{r.cooking+r.accepted}</b></div>)}</>:<p className="muted">Tidak ada masakan yang tertunda.</p>}</>;
+  const contents=<><p className="workload-caption"></p>{rows.length?<><div className="workload-labels"><span>Menu</span><span>Dimasak</span></div>{rows.map(r=><div className="workload-row" key={r.menuId}><div><strong>{r.name}</strong><small>{r.total} porsi perlu disiapkan</small></div><b>{r.cooking+r.accepted}</b></div>)}</>:<p className="muted">Tidak ada masakan yang tertunda.</p>}</>;
   return <><aside className="workload-desktop"><h2>Ringkasan masakan <span>{total}</span></h2>{contents}</aside><details className="workload-mobile"><summary><CookingPot size={18}/><span>Perlu dimasak <strong>{total} porsi</strong></span><ChevronDown size={17}/></summary><div>{contents}</div></details></>;
 }
