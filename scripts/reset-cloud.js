@@ -20,5 +20,5 @@ async function clearImages(prefix='') {
 }
 await clearImages();
 const state=await store.read();
-for(const key of ['menu','tabs','orders','payments','users','sessions','audit'])if(state[key].length)throw new Error(`${key} is not empty`);
+for(const key of ['menu','tabs','orders','payments','expenses','users','sessions','audit'])if(state[key].length)throw new Error(`${key} is not empty`);
 console.log('Total reset verified: no menus, transactions, orders, payments, staff, sessions, audit or uploaded menu images. Default restaurant settings restored.');

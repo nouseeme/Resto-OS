@@ -10,6 +10,8 @@ import { openStore, assert, id, now, tick, placeOrder, operate, passwordHash, pa
 import { PORTAL_PATH, STAFF_PATH } from '../shared/routes.js';
 import { WORKSPACE_ROLES } from '../shared/workspaces.js';
 import { parseMenuFile, previewMenuImport, commitMenuImport, menuTemplate } from './menu-import.js';
+import { financeAction } from './finance.js';
+import { reportWorkbook, reportPeriod } from './reports.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const cloud = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY && !process.env.RESTO_DB);
@@ -53,14 +55,14 @@ app.get('/api/state', async(req,res) => {
   const s = req.state;
   if(req.actor?.role==='manager')await cleanupMenuImages();
   res.set('X-Resto-Images', cloud ? 'enabled' : 'disabled');
-  const publicSettings = s.settings; const features={menuImageUpload:imagesEnabled,staffAuth:cloud?'supabase':'local'};
+  const {expenseCategories,paymentMethods,...publicSettings} = s.settings; const features={menuImageUpload:imagesEnabled,staffAuth:cloud?'supabase':'local'};
   const ownTabs = s.tabs.filter(t=>t.token === req.guest);
   const tab = ownTabs.find(t=>!t.closedAt) ?? ownTabs.at(-1);
   if (req.staff && !req.actor) return res.json({ settings: s.settings, features, menu: [], setupRequired: false, actor: {id:req.staff.id,name:req.staff.name,username:req.staff.username,role:null}, roleRequired: true, tabs: [], orders: [], payments: [], audit: [], users: [], serverTime: now() });
   if (!req.actor) return res.json({ settings: publicSettings, features, menu: s.menu, setupRequired: !cloud && !s.users.length, actor: null, tabs: tab ? [{...tab,token:undefined}] : [], orders: tab ? s.orders.filter(o=>o.tabId===tab.id).map(({token,...o})=>({...o, status:undefined,acceptedAt:undefined,acceptedBy:undefined,autoAcceptAt:undefined, units:o.units.map(({status,readyAt,cookingAt,deliveredAt,...u})=>({...u,cancelled:status==='cancelled'}))})) : [], payments: [], ban: s.bans[req.guest] ?? null, serverTime: now() });
   const { password, ...actor } = req.actor;
   const role = actor.role;
-  res.json({ settings: s.settings, features, menu: s.menu, actor, setupRequired: false, tabs: s.tabs.map(({token,...t})=>({...t, ban: s.bans[token] ?? null})), orders: s.orders.map(({token,...o})=>role==='kitchen' ? {...o,units:o.units.map(({paid,paymentId,price,...u})=>u)} : o), payments: role === 'kitchen' ? [] : s.payments, audit: role === 'manager' ? s.audit.slice(-200).reverse() : [], users: role==='manager' ? s.users.map(({password,...u})=>u) : [], serverTime: now() });
+  res.json({ settings: role==='manager'?s.settings:{...publicSettings,paymentMethods}, features, menu: s.menu, actor, setupRequired: false, tabs: s.tabs.map(({token,...t})=>({...t, ban: s.bans[token] ?? null})), orders: s.orders.map(({token,...o})=>role==='kitchen' ? {...o,units:o.units.map(({paid,paymentId,price,...u})=>u)} : o), payments: role === 'kitchen' ? [] : s.payments, expenses:role==='manager'?s.expenses:[], audit: role === 'manager' ? s.audit.slice(-200).reverse() : [], users: role==='manager' ? s.users.map(({password,...u})=>u) : [], serverTime: now() });
 });
 app.post('/api/login', async(req,res) => {
   const address = hash(req.ip ?? req.socket.remoteAddress ?? 'unknown');
@@ -156,7 +158,7 @@ app.post('/api/action',async(req,res)=>{
   try {
     const result=await mutate(req,s=>{
       oldPhoto=s.menu.find(m=>m.id===body.menuId)?.photo;
-      const result=operate(s,body,req.actor);
+      const result=['financeOption','expense'].includes(body.action)?financeAction(s,body,req.actor):operate(s,body,req.actor);
       if(['menuSave','menuDelete'].includes(body.action) && oldPhoto && !s.menu.some(item=>item.photo===oldPhoto))queueImageCleanup(s,oldPhoto);
       return result;
     });
@@ -180,6 +182,14 @@ app.get('/api/menu-template',async(req,res)=>{
   const file=await menuTemplate(req.state.menu);
   res.set('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.set('Content-Disposition','attachment; filename="template-menu-restoOS.xlsx"');
+  res.send(file);
+});
+app.get('/api/reports',async(req,res)=>{
+  assert(req.actor?.role==='manager','Laporan hanya tersedia di Manajemen.',403);
+  const period=reportPeriod(req.query);
+  const file=await reportWorkbook(req.state,period);
+  res.set('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.set('Content-Disposition','attachment; filename="laporan-restoOS.xlsx"');
   res.send(file);
 });
 app.post('/api/menu-import/:step',async(req,res)=>{

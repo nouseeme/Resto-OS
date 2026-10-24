@@ -1,4 +1,5 @@
 import { languageCode } from '../shared/menu-languages.js';
+import { ensureFinance } from '../shared/finance.js';
 import { isCurrency, formatMoney } from '../shared/currency.js';
 import { DatabaseSync } from 'node:sqlite';
 import { randomUUID, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
@@ -21,7 +22,7 @@ export function initialState() {
   return {
     settings: { name: 'Restoran Anda', tagline: '', primary: '#a43c2d', accent: '#405644', logo: '', paused: false, autoAcceptSeconds: 15, currency: 'IDR' },
     menu: [],
-    tabs: [], orders: [], payments: [], audit: [], bans: {}, requests: {}, users: [], sessions: []
+    tabs: [], orders: [], payments: [], expenses: [], audit: [], bans: {}, requests: {}, users: [], sessions: []
   };
 }
 
@@ -70,7 +71,7 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
     assert(Number.isInteger(i.qty) && i.qty > 0 && i.qty <= 30, 'Jumlah menu harus 1–30.');
     totalUnits += i.qty;
     assert(totalUnits <= 100, 'Maksimal 100 porsi per kiriman.');
-    return Array.from({ length: i.qty }, () => ({ id: id(), menuId: m.id, name: m.name, price: m.price, note: String(i.note ?? '').slice(0, 200), status: 'waiting', paid: false }));
+    return Array.from({ length: i.qty }, () => ({ id: id(), menuId: m.id, name: m.name, category: m.category, price: m.price, note: String(i.note ?? '').slice(0, 200), status: 'waiting', paid: false }));
   });
   let tab = actor && body.tabId ? s.tabs.find(t => t.id === body.tabId && !t.closedAt) : !actor ? s.tabs.find(t => t.token === token && !t.closedAt) : null;
   if (actor && body.tabId) assert(tab, 'Transaksi sudah selesai. Cari pelanggan atau buat transaksi baru.', 409);
@@ -147,10 +148,12 @@ export function operate(s, body, actor) {
       o.status = 'accepted'; o.acceptedAt = now(); o.acceptedBy = actor.name;
       o.units.filter(u => u.status === 'waiting').forEach(u => u.status = 'cooking');
     } else if (action === 'pay') {
-      assert(['Tunai','QRIS','Transfer','Kartu'].includes(body.method), 'Pilih metode pembayaran.');
+      ensureFinance(s);
+      const method=s.settings.paymentMethods.find(m=>m.active&&(body.methodId?m.id===body.methodId:m.name===body.method));
+      assert(method, 'Pilih metode pembayaran yang masih aktif.',409);
       const selected = units.filter(u => !u.paid && u.status !== 'cancelled');
       assert(selected.length && (!body.unitIds || selected.length === units.length), 'Unit sudah dibayar atau dibatalkan. Muat data terbaru.', 409);
-      const payment = { id: id(), orderId: o.id, tabId: o.tabId, unitIds: selected.map(u => u.id), amount: selected.reduce((n,u) => n+u.price,0), method: body.method, at: now(), actor: actor.name };
+      const payment = { id: id(), orderId: o.id, tabId: o.tabId, unitIds: selected.map(u => u.id), amount: selected.reduce((n,u) => n+u.price,0), method: method.name, methodId:method.id, at: now(), actor: actor.name };
       s.payments.push(payment); selected.forEach(u => { u.paid = true; u.paymentId = payment.id; });
     } else {
       const from = { ready: ['accepted','cooking'], deliver: ['ready'], cancel: ['waiting','accepted','cooking','ready'] }[action];
@@ -173,7 +176,7 @@ export function openStore(filename) {
   db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS app (id INTEGER PRIMARY KEY CHECK(id=1), body TEXT NOT NULL)');
   if (!db.prepare('SELECT id FROM app').get()) db.prepare('INSERT INTO app VALUES (1,?)').run(JSON.stringify(initialState()));
   return {
-    read: () => JSON.parse(db.prepare('SELECT body FROM app WHERE id=1').get().body),
+    read: () => ensureFinance(JSON.parse(db.prepare('SELECT body FROM app WHERE id=1').get().body)),
     transaction(fn) {
       db.exec('BEGIN IMMEDIATE');
       try { const s = this.read(); const result = fn(s); db.prepare('UPDATE app SET body=? WHERE id=1').run(JSON.stringify(s)); db.exec('COMMIT'); return result; }

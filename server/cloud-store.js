@@ -1,9 +1,10 @@
 import { supabase } from './supabase.js';
+import { ensureFinance } from '../shared/finance.js';
 
-const arrays = ['menu','tabs','payments','users','audit'];
+const arrays = ['menu','tabs','payments','users','audit','expenses'];
 export function encodeState(s) {
   const rows = { settings: [{ ...s.settings, id: 'restaurant' }] };
-  for (const name of arrays) rows[name] = s[name];
+  for (const name of arrays) rows[name] = s[name] ?? [];
   rows.orders = s.orders.map(({ units, ...o }) => o);
   rows.portions = s.orders.flatMap(o => o.units.map(u => ({ ...u, orderId: o.id })));
   rows.sessions = s.sessions.map(x => ({ ...x, id: x.token }));
@@ -15,11 +16,11 @@ export function encodeState(s) {
 export function decodeState(rows) {
   const s = { settings: rows.settings[0] ? { ...rows.settings[0] } : null };
   if (s.settings) delete s.settings.id;
-  for (const name of arrays) s[name] = rows[name];
+  for (const name of arrays) s[name] = rows[name] ?? [];
   s.orders = rows.orders.map(o => ({ ...o, units: rows.portions.filter(u => u.orderId === o.id).map(({ orderId, ...u }) => u) }));
   s.sessions = rows.sessions.map(({ id, ...x }) => x);
   for (const [table, target] of [['bans','bans'],['requests','requests'],['login_attempts','loginAttempts']]) s[target] = Object.fromEntries(rows[table].map(x => [x.id,x.value]));
-  return s;
+  return ensureFinance(s);
 }
 export function stateChanges(before, after) {
   const changes = {};

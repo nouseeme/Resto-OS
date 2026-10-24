@@ -12,6 +12,8 @@ Application pages are `/portal` and `/ruang-staf`; `/` redirects to the portal. 
 
 Apply the versioned SQL files in `supabase/migrations` to a dedicated project. Configure server environment variables `SUPABASE_URL` (project endpoint) and `SUPABASE_SECRET_KEY` (server-only credential).
 
+The management-finance migration adds the private `expenses` table, extends both snapshot/commit RPCs and seeds editable category/method lists in restaurant settings. Apply it before deploying the finance application changes. Expenses use the existing revision lock, RLS and server-only grants. Previous application versions ignore the new table without deleting its rows. SQLite snapshots acquire finance defaults on read and persist them on their next write.
+
 Never prefix secrets with `VITE_` or put them in client code. Production and preview should use separate data and credentials. Keep `.env` files, databases, backups, provider metadata, and local tooling outside source control.
 
 Migrations create storage and scheduled work, not restaurant data or staff accounts. Public `/api/setup` is disabled for cloud databases. Cloud accounts use Supabase Auth as described below.

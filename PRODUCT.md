@@ -45,3 +45,11 @@ Instalasi baru dimulai dengan katalog, transaksi, dan akun kosong. Identitas awa
 
 ## Manual description languages
 Excel accepts optional Deskripsi [language-code] columns. Deskripsi is the Indonesian default; translations affect descriptions only. Empty/omitted translations preserve existing values. The portal language selector uses the union of stored languages and falls back per menu to Indonesian without filtering menus out. Language count is flexible within file limits.
+
+## Management finance and reporting
+
+Manajemen → Keuangan combines received customer payments and paid expenses in one ledger. Expenses record event time, positive integer amount, category, payment method, recipient, description, optional reference, and recording staff. Submissions have an idempotency key. Defaults are Bahan baku, Peralatan, Gaji, Kemasan, Lain-lain; payment defaults are Tunai and Transfer. Manajemen → Pengaturan → Keuangan supports adding, renaming and archiving both lists, retaining at least one active choice. Existing payment labels remain readable. New orders snapshot the menu category.
+
+Overview includes sales by menu category, receipt totals and counts by payment method, expense total and net cash movement for its selected period. Sales and cash receipts remain distinct. Keuangan has date, type, category, method and text filters, with 50 records per page. Expense records are append-only; corrections/refunds are not implemented.
+
+One unobtrusive Ekspor laporan action appears in the shared management page heading. It downloads an integrated XLSX workbook with raw transactions, portions, payments and expenses, formula-driven ledger, transaction/debt report, cash and expense breakdowns, menu report, category sales and summary. Optional date bounds use the device timezone and become UTC bounds on the server; timestamps in Excel are UTC. Supporting history is included to calculate opening recorded cash and debt as of the period end. Recorded cash is not a bank balance and excludes unrecorded capital. Editing existing raw rows recalculates dependent reports in Excel; adding new rows/categories requires extending ranges/re-exporting. Data is a snapshot, not a live connection. Historical menu categories without snapshots fall back to the current catalogue or an explicit unknown label.

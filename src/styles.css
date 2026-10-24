@@ -344,3 +344,18 @@
 }
 .menu-flight img { width: 100%; height: 100%; object-fit: cover; }
 @media (prefers-reduced-motion: reduce) { .menu-flight { display: none; } }
+/* Management finance extends the existing ruled ledger. */
+.report-export{display:inline-flex;align-items:center;gap:8px;min-height:44px;white-space:nowrap;flex-shrink:0}
+.finance-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px;margin:24px 0 8px}
+.finance-table{max-width:100%;overflow:auto}
+.finance-table table{width:100%;min-width:760px;border-collapse:collapse;font-size:12px}
+.finance-table th{text-align:left;font-size:11px;color:var(--muted);font-weight:500;padding:13px 12px;border-bottom:1px solid var(--ink)}
+.finance-table td{padding:17px 12px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere;max-width:300px}
+.finance-table td small,.finance-sub{display:block;color:var(--muted);font-size:11px;line-height:1.6;margin-top:4px}
+.finance-table td.amount{white-space:nowrap}
+.finance-table th:nth-last-child(-n+2){text-align:right}
+.finance-option{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:10px 0}
+.finance-option input{flex:1;min-width:100px;width:100%;min-height:44px;background:var(--surface);border:1px solid var(--line);padding:10px;color:var(--ink);font:inherit;font-size:12px}
+.finance-option .text-link{min-height:44px;display:inline-flex;align-items:center;gap:5px;font-size:11px}
+.finance-option small{flex-basis:100%;color:var(--muted)}
+@media(max-width:767px){.finance-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.page-title:has(.report-export){flex-wrap:wrap}.finance-table table{min-width:700px}.list-toolbar:has(+.metrics){flex-wrap:wrap}.finance-option{gap:8px}}

@@ -4,7 +4,7 @@ import { WORKSPACE_PAGES } from '../shared/workspaces.js';
 
 const names = { kitchen:'Dapur', waiter:'Garson', manager:'Manajemen' };
 const modules = {
-  overview: ['Ringkasan bisnis', LayoutDashboard], history: ['Arsip transaksi', ReceiptText],
+  overview: ['Ringkasan bisnis', LayoutDashboard], history: ['Arsip transaksi', ReceiptText], finance: ['Keuangan', ReceiptText],
   menu: ['Katalog menu', BookOpen], settings: ['Pengaturan', Settings],
   kitchen: ['Antrean dapur', CookingPot], availability: ['Ketersediaan', BookOpen],
   customers: ['Pelanggan & Order', UsersRound], delivery: ['Siap Diantar', UtensilsCrossed],

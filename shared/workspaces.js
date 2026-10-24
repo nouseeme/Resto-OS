@@ -3,5 +3,5 @@ export const WORKSPACE_HOME = { kitchen: 'kitchen', waiter: 'customers', manager
 export const WORKSPACE_PAGES = {
   kitchen: ['kitchen', 'availability'],
   waiter: ['customers', 'delivery', 'availability'],
-  manager: ['overview', 'history', 'menu', 'settings'],
+  manager: ['overview', 'history', 'finance', 'menu', 'settings'],
 };
