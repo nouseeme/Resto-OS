@@ -11,7 +11,7 @@ test('complete lifecycle: partial pay and readiness, all channels, safe closure 
  assert.equal(s.tabs.length,1);assert.equal(s.orders.length,2);
  const first=s.orders[0];unitAction(s,'pay',waiter,first,[first.units[0]]);assert.equal(due(first.units),12000);
  operate(s,{action:'pay',orderId:first.id,method:'QRIS'},waiter);assert.equal(due(first.units),0);assert.equal(s.payments.reduce((n,p)=>n+p.amount,0),24000);assert.equal(s.tabs[0].closedAt,null);
- for(const o of s.orders){unitAction(s,'accept',kitchen,o);unitAction(s,'cook',kitchen,o);unitAction(s,'ready',kitchen,o,[o.units[0]]);assert.equal(o.units[1].status,'cooking');unitAction(s,'deliver',waiter,o,[o.units[0]]);unitAction(s,'ready',kitchen,o,[o.units[1]]);unitAction(s,'deliver',waiter,o,[o.units[1]])}
+ for(const o of s.orders){unitAction(s,'accept',kitchen,o);unitAction(s,'ready',kitchen,o,[o.units[0]]);assert.equal(o.units[1].status,'cooking');unitAction(s,'deliver',waiter,o,[o.units[0]]);unitAction(s,'ready',kitchen,o,[o.units[1]]);unitAction(s,'deliver',waiter,o,[o.units[1]])}
  assert.equal(s.tabs[0].closedAt,null);unitAction(s,'pay',waiter,s.orders[1]);assert.ok(s.tabs[0].closedAt);
  placeOrder(s,request(),null,'token');assert.equal(s.tabs.length,2);assert.notEqual(s.orders[0].slug,s.orders[2].slug);
 });
@@ -29,7 +29,7 @@ test('name normalization and ownership prevent taking over tabs; rename preserve
 test('idempotent order retry and double payment/delivery do not duplicate obligations',()=>{
  const s=initialState(),r=request();const a=placeOrder(s,r,null,'a'),b=placeOrder(s,r,null,'a');assert.deepEqual(a,b);assert.equal(s.orders.length,1);
  unitAction(s,'pay',waiter);assert.throws(()=>unitAction(s,'pay',waiter),/dibayar/);assert.equal(s.payments.length,1);
- unitAction(s,'accept',kitchen);unitAction(s,'cook',kitchen);unitAction(s,'ready',kitchen);unitAction(s,'deliver',waiter);assert.throws(()=>unitAction(s,'deliver',waiter),/Status/);
+ unitAction(s,'accept',kitchen);unitAction(s,'ready',kitchen);unitAction(s,'deliver',waiter);assert.throws(()=>unitAction(s,'deliver',waiter),/Status/);
 });
 test('server checks roles, prices, availability, pause and refuses paid cancellation',()=>{
  const s=initialState();const r=request();r.items[0].price=1;assert.throws(()=>placeOrder(s,r,null,'a'),/Harga/);assert.equal(s.tabs.length,0);
@@ -39,7 +39,18 @@ test('server checks roles, prices, availability, pause and refuses paid cancella
 });
 test('15 second auto-accept survives pause and bans; cancellation is terminal',()=>{
  const s=initialState(),t=Date.now();placeOrder(s,request(),null,'a',t);tick(s,t+14999);assert.equal(s.orders[0].status,'waiting');s.settings.paused=true;s.bans.a={until:t+600000};tick(s,t+15000);assert.equal(s.orders[0].status,'accepted');
+ assert.ok(s.orders[0].units.every(u=>u.status==='cooking'));
+ unitAction(s,'ready',kitchen,s.orders[0]);assert.ok(s.orders[0].units.every(u=>u.status==='ready'));
  s.settings.paused=false;placeOrder(s,request('Dua'),null,'b',t);unitAction(s,'cancel',waiter,s.orders[1]);tick(s,t+60000);assert.equal(s.orders[1].status,'cancelled');
+});
+
+test('confirmation goes straight to preparation; legacy accepted portions can finish directly',()=>{
+ const s=initialState();placeOrder(s,request(),waiter,null);
+ assert.throws(()=>unitAction(s,'ready',kitchen),/Status/);
+ unitAction(s,'accept',kitchen);assert.ok(s.orders[0].units.every(u=>u.status==='cooking'));
+ s.orders[0].units[0].status='accepted';
+ unitAction(s,'ready',kitchen);assert.ok(s.orders[0].units.every(u=>u.status==='ready'));
+ assert.throws(()=>unitAction(s,'cook',kitchen),/Peran/);
 });
 test('progressive ban commits and unban retains strikes, old orders continue',()=>{
  const s=initialState(),t=Date.now();for(let i=0;i<4;i++)placeOrder(s,request(),null,'a',t+i);const result=placeOrder(s,request(),null,'a',t+5);assert.equal(result.status,429);assert.equal(s.orders.length,4);assert.equal(s.bans.a.until,t+5+900000);

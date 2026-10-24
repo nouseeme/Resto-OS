@@ -49,7 +49,7 @@ test('HTTP access and transaction boundaries across anonymous browsers and staff
   assert.equal((await call('waiter','action',{action:'pay',orderId:o.id,method:'Tunai'})).status,200);
   assert.equal((await call('waiter','state')).data.payments.reduce((n,p)=>n+p.amount,0),24000);
   assert.equal((await call('waiter','state')).data.tabs[0].closedAt,null);
-  for(const action of ['accept','cook','ready'])assert.equal((await call('chef','action',{action,orderId:o.id})).status,200);
+  for(const action of ['accept','ready'])assert.equal((await call('chef','action',{action,orderId:o.id})).status,200);
   assert.equal((await call('waiter','action',{action:'deliver',orderId:o.id})).status,200);
   assert.ok((await call('waiter','state')).data.tabs[0].closedAt);
   assert.equal((await call('a','state')).data.orders[0].units[0].status,undefined);

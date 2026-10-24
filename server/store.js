@@ -40,7 +40,7 @@ export function closeTabs(s) {
 export function tick(s, time = Date.now()) {
   for (const o of s.orders) if (o.status === 'waiting' && time >= Date.parse(o.autoAcceptAt)) {
     o.status = 'accepted'; o.acceptedAt = new Date(time).toISOString(); o.acceptedBy = 'Otomatis';
-    o.units.filter(u => u.status === 'waiting').forEach(u => u.status = 'accepted');
+    o.units.filter(u => u.status === 'waiting').forEach(u => u.status = 'cooking');
     audit(s, { name: 'Sistem' }, 'auto_accept', o.id);
   }
 }
@@ -90,7 +90,7 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
 
 export function operate(s, body, actor) {
   const { action } = body;
-  const allowed = { rename: ['waiter'], pay: ['waiter'], deliver: ['waiter'], accept: ['kitchen'], cook: ['kitchen'], ready: ['kitchen'], cancel: ['kitchen','waiter'], unban: ['waiter'], pause: ['kitchen','manager'], menuToggle: ['waiter','kitchen','manager'], menuSave: ['manager'], settings: ['manager'] };
+  const allowed = { rename: ['waiter'], pay: ['waiter'], deliver: ['waiter'], accept: ['kitchen'], ready: ['kitchen'], cancel: ['kitchen','waiter'], unban: ['waiter'], pause: ['kitchen','manager'], menuToggle: ['waiter','kitchen','manager'], menuSave: ['manager'], settings: ['manager'] };
   assert(allowed[action]?.includes(actor.role), 'Peran Anda tidak dapat melakukan tindakan ini.', 403);
   if (action === 'rename') {
     const t = s.tabs.find(t => t.id === body.tabId && !t.closedAt); assert(t, 'Transaksi tidak aktif.', 409);
@@ -127,7 +127,7 @@ export function operate(s, body, actor) {
     if (action === 'accept') {
       assert(o.status === 'waiting', 'Order sudah diterima atau dibatalkan.', 409);
       o.status = 'accepted'; o.acceptedAt = now(); o.acceptedBy = actor.name;
-      o.units.filter(u => u.status === 'waiting').forEach(u => u.status = 'accepted');
+      o.units.filter(u => u.status === 'waiting').forEach(u => u.status = 'cooking');
     } else if (action === 'pay') {
       assert(['Tunai','QRIS','Transfer','Kartu'].includes(body.method), 'Pilih metode pembayaran.');
       const selected = units.filter(u => !u.paid && u.status !== 'cancelled');
@@ -135,7 +135,7 @@ export function operate(s, body, actor) {
       const payment = { id: id(), orderId: o.id, tabId: o.tabId, unitIds: selected.map(u => u.id), amount: selected.reduce((n,u) => n+u.price,0), method: body.method, at: now(), actor: actor.name };
       s.payments.push(payment); selected.forEach(u => { u.paid = true; u.paymentId = payment.id; });
     } else {
-      const from = { cook: ['accepted'], ready: ['cooking'], deliver: ['ready'], cancel: ['waiting','accepted','cooking','ready'] }[action];
+      const from = { ready: ['accepted','cooking'], deliver: ['ready'], cancel: ['waiting','accepted','cooking','ready'] }[action];
       assert(units.every(u => from.includes(u.status)), 'Status sudah berubah. Muat data terbaru sebelum melanjutkan.', 409);
       if (action === 'cancel') {
         assert(normalize(body.reason).length >= 3, 'Tuliskan alasan pembatalan (minimal 3 karakter).');
