@@ -33,7 +33,6 @@ export default function Customers({ data, select, act, disabled, Button, Empty }
       <span className="muted">{customers.length} pelanggan · {rows.length} ditampilkan</span>
       <label className="search"><Search size={17}/><input aria-label="Cari pelanggan" placeholder="Cari nama pelanggan…" value={query} onChange={event => setQuery(event.target.value)}/></label>
     </div>
-    <p className="fine-print customer-scope-note">Order aktif di atas, piutang lebih dari 5 jam tanpa order baru di bawah. Setiap pelanggan menampilkan seluruh sisa tagihannya.</p>
     {chosen.length > 0 && <div className="customer-selection" aria-label="Pelanggan terpilih">
       <div className="customer-selection-head"><strong>{chosen.length} pelanggan dipilih</strong><button className="text-link" onClick={clear} disabled={disabled}><X size={14}/>Batal pilih</button></div>
       <p>{chosen.map(row => row.tab.name).join(' · ')}</p>
@@ -62,6 +61,5 @@ export default function Customers({ data, select, act, disabled, Button, Empty }
         }) : <p className="customer-group-empty">{group.id === 'active' ? 'Tidak ada order aktif.' : 'Tidak ada piutang lama.'}</p>}
       </section>)}
     </> : <Empty title={query ? 'Pelanggan tidak ditemukan' : 'Belum ada pelanggan aktif'} text={query ? 'Coba nama pelanggan lain.' : 'Gunakan Buat order untuk mencari pelanggan atau membuka transaksi baru.'}/>}
-    <p className="fine-print">Satu pelanggan hanya muncul di satu kelompok. Order baru memindahkan pelanggan ke Order aktif, dengan seluruh sisa tagihan tetap disatukan.</p>
   </section>;
 }
