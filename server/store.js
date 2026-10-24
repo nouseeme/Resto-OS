@@ -1,4 +1,5 @@
 import { languageCode } from '../shared/menu-languages.js';
+import { guestTab, canonicalTab } from '../shared/customer-service.js';
 import { ensureFinance } from '../shared/finance.js';
 import { isCurrency, formatMoney } from '../shared/currency.js';
 import { DatabaseSync } from 'node:sqlite';
@@ -49,6 +50,15 @@ export function tick(s, time = Date.now()) {
 export function placeOrder(s, body, actor, token, time = Date.now()) {
   const requestKey = `${actor ? actor.id : token}:${body.requestId}`;
   assert(typeof body.requestId === 'string' && body.requestId.length >= 16 && body.requestId.length <= 100, 'Identitas kiriman tidak valid.');
+  if (!actor) {
+    const own = guestTab(s.tabs, token);
+    const active = own && !own.closedAt ? own : null;
+    const expected = typeof body.sessionTabId === 'string' ? canonicalTab(s.tabs, s.tabs.find(t => t.id === body.sessionTabId)) : null;
+    const replay = s.requests[requestKey];
+    assert(body.sessionTabId === null || typeof body.sessionTabId === 'string', 'Sesi portal perlu diperbarui. Muat ulang halaman sebelum memesan.', 409);
+    assert((body.sessionTabId === null && !active) || (active && expected?.id === active.id) || (active && replay?.tabId === active.id), 'Sesi transaksi sudah berakhir atau berubah. Periksa sesi terbaru sebelum mengirim pesanan baru.', 409);
+    assert(!replay || (active && replay.tabId === active.id), 'Kiriman ini berasal dari sesi transaksi yang sudah berakhir. Mulai pesanan baru.', 409);
+  }
   if (s.requests[requestKey]) return s.requests[requestKey];
   assert(!s.settings.paused, 'Pemesanan sedang dijeda dapur. Keranjang tetap tersimpan.', 409);
   if (!actor) {
@@ -73,7 +83,8 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
     assert(totalUnits <= 100, 'Maksimal 100 porsi per kiriman.');
     return Array.from({ length: i.qty }, () => ({ id: id(), menuId: m.id, name: m.name, category: m.category, price: m.price, note: String(i.note ?? '').slice(0, 200), status: 'waiting', paid: false }));
   });
-  let tab = actor && body.tabId ? s.tabs.find(t => t.id === body.tabId && !t.closedAt) : !actor ? s.tabs.find(t => t.token === token && !t.closedAt) : null;
+  let tab = actor && body.tabId ? s.tabs.find(t => t.id === body.tabId && !t.closedAt) : !actor ? guestTab(s.tabs, token) : null;
+  if (tab?.closedAt) tab = null;
   if (actor && body.tabId) assert(tab, 'Transaksi sudah selesai. Cari pelanggan atau buat transaksi baru.', 409);
   if (!tab) {
     const name = normalize(body.name);
@@ -92,9 +103,22 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
 
 export function operate(s, body, actor) {
   const { action } = body;
-  const allowed = { rename: ['waiter'], pay: ['waiter'], deliver: ['waiter'], accept: ['kitchen'], ready: ['kitchen'], cancel: ['kitchen','waiter'], unban: ['waiter'], pause: ['kitchen','manager'], menuToggle: ['waiter','kitchen','manager'], menuSave: ['manager'], menuDelete: ['manager'], settings: ['manager'] };
+  const allowed = { merge: ['waiter'], rename: ['waiter'], pay: ['waiter'], deliver: ['waiter'], accept: ['kitchen'], ready: ['kitchen'], cancel: ['kitchen','waiter'], unban: ['waiter'], pause: ['kitchen','manager'], menuToggle: ['waiter','kitchen','manager'], menuSave: ['manager'], menuDelete: ['manager'], settings: ['manager'] };
   assert(allowed[action]?.includes(actor.role), 'Peran Anda tidak dapat melakukan tindakan ini.', 403);
-  if (action === 'rename') {
+  if (action === 'merge') {
+    assert(Array.isArray(body.tabIds) && body.tabIds.length >= 2 && body.tabIds.length <= 50 && new Set(body.tabIds).size === body.tabIds.length, 'Pilih 2–50 pelanggan yang berbeda.');
+    assert(body.tabIds.includes(body.targetTabId), 'Pilih pelanggan utama dari pilihan Anda.');
+    const target = s.tabs.find(t => t.id === body.targetTabId && !t.closedAt && !t.mergedInto);
+    assert(target, 'Pelanggan utama sudah berubah. Muat ulang dan pilih kembali.', 409);
+    const sources = body.tabIds.filter(tabId => tabId !== target.id).map(tabId => s.tabs.find(t => t.id === tabId));
+    assert(sources.every(t => t && ((!t.closedAt && !t.mergedInto) || t.mergedInto === target.id)), 'Pilihan pelanggan sudah berubah. Muat ulang dan pilih kembali.', 409);
+    const sourceIds = new Set(sources.map(t => t.id));
+    target.createdAt = [target, ...sources].map(t => t.createdAt).sort((a, b) => Date.parse(a) - Date.parse(b))[0];
+    for (const order of s.orders) if (sourceIds.has(order.tabId)) order.tabId = target.id;
+    for (const payment of s.payments) if (sourceIds.has(payment.tabId)) payment.tabId = target.id;
+    for (const request of Object.values(s.requests)) if (sourceIds.has(request.tabId)) request.tabId = target.id;
+    for (const source of sources) { source.mergedInto = target.id; source.closedAt ??= now(); }
+  } else if (action === 'rename') {
     const t = s.tabs.find(t => t.id === body.tabId && !t.closedAt); assert(t, 'Transaksi tidak aktif.', 409);
     const name = normalize(body.name); assert(name.length >= 2 && name.length <= 60, 'Nama harus 2–60 karakter.');
     assert(!s.tabs.some(x => x.id !== t.id && !x.closedAt && key(x.name) === key(name)), 'Nama sedang dipakai transaksi aktif lain.', 409);

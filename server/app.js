@@ -11,6 +11,7 @@ import { PORTAL_PATH, STAFF_PATH } from '../shared/routes.js';
 import { WORKSPACE_ROLES } from '../shared/workspaces.js';
 import { parseMenuFile, previewMenuImport, commitMenuImport, menuTemplate } from './menu-import.js';
 import { financeAction } from './finance.js';
+import { guestSession } from '../shared/customer-service.js';
 import { reportWorkbook, reportPeriod } from './reports.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -56,13 +57,14 @@ app.get('/api/state', async(req,res) => {
   if(req.actor?.role==='manager')await cleanupMenuImages();
   res.set('X-Resto-Images', cloud ? 'enabled' : 'disabled');
   const {expenseCategories,paymentMethods,...publicSettings} = s.settings; const features={menuImageUpload:imagesEnabled,staffAuth:cloud?'supabase':'local'};
-  const ownTabs = s.tabs.filter(t=>t.token === req.guest);
-  const tab = ownTabs.find(t=>!t.closedAt) ?? ownTabs.at(-1);
+  const guest = guestSession(s.tabs, req.guest);
+  const tab = guest?.status === 'active' ? guest.tab : null;
+  const portalSession = guest ? { status: guest.status, key: guest.key, tabId: tab?.id ?? null } : { status: 'new', key: null, tabId: null };
   if (req.staff && !req.actor) return res.json({ settings: s.settings, features, menu: [], setupRequired: false, actor: {id:req.staff.id,name:req.staff.name,username:req.staff.username,role:null}, roleRequired: true, tabs: [], orders: [], payments: [], audit: [], users: [], serverTime: now() });
-  if (!req.actor) return res.json({ settings: publicSettings, features, menu: s.menu, setupRequired: !cloud && !s.users.length, actor: null, tabs: tab ? [{...tab,token:undefined}] : [], orders: tab ? s.orders.filter(o=>o.tabId===tab.id).map(({token,...o})=>({...o, status:undefined,acceptedAt:undefined,acceptedBy:undefined,autoAcceptAt:undefined, units:o.units.map(({status,readyAt,cookingAt,deliveredAt,...u})=>({...u,cancelled:status==='cancelled'}))})) : [], payments: [], ban: s.bans[req.guest] ?? null, serverTime: now() });
+  if (!req.actor) return res.json({ settings: publicSettings, features, portalSession, menu: s.menu, setupRequired: !cloud && !s.users.length, actor: null, tabs: tab ? [{...tab,token:undefined}] : [], orders: tab ? s.orders.filter(o=>o.tabId===tab.id).map(({token,...o})=>({...o, status:undefined,acceptedAt:undefined,acceptedBy:undefined,autoAcceptAt:undefined, units:o.units.map(({status,readyAt,cookingAt,deliveredAt,...u})=>({...u,cancelled:status==='cancelled'}))})) : [], payments: [], ban: s.bans[req.guest] ?? null, serverTime: now() });
   const { password, ...actor } = req.actor;
   const role = actor.role;
-  res.json({ settings: role==='manager'?s.settings:{...publicSettings,paymentMethods}, features, menu: s.menu, actor, setupRequired: false, tabs: s.tabs.map(({token,...t})=>({...t, ban: s.bans[token] ?? null})), orders: s.orders.map(({token,...o})=>role==='kitchen' ? {...o,units:o.units.map(({paid,paymentId,price,...u})=>u)} : o), payments: role === 'kitchen' ? [] : s.payments, expenses:role==='manager'?s.expenses:[], audit: role === 'manager' ? s.audit.slice(-200).reverse() : [], users: role==='manager' ? s.users.map(({password,...u})=>u) : [], serverTime: now() });
+  res.json({ settings: role==='manager'?s.settings:{...publicSettings,paymentMethods}, features, menu: s.menu, actor, setupRequired: false, tabs: s.tabs.filter(t=>!t.mergedInto).map(({token,...t})=>({...t, ban: s.bans[token] ?? null})), orders: s.orders.map(({token,...o})=>role==='kitchen' ? {...o,units:o.units.map(({paid,paymentId,price,...u})=>u)} : o), payments: role === 'kitchen' ? [] : s.payments, expenses:role==='manager'?s.expenses:[], audit: role === 'manager' ? s.audit.slice(-200).reverse() : [], users: role==='manager' ? s.users.map(({password,...u})=>u) : [], serverTime: now() });
 });
 app.post('/api/login', async(req,res) => {
   const address = hash(req.ip ?? req.socket.remoteAddress ?? 'unknown');

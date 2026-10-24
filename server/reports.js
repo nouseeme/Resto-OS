@@ -15,6 +15,8 @@ const serial=d=>+new Date(d)/86400000+25569;
 const sum=rows=>rows.reduce((n,r)=>n+r,0);
 const alive=(u,end)=>u.status!=='cancelled'||(u.cancelledAt&&Date.parse(u.cancelledAt)>=+end);
 export async function reportWorkbook(s,{start=new Date(0),end=new Date(),snapshot=new Date()}={}) {
+  // Merged source rows only retain portal ownership; they are not extra transactions.
+  s = { ...s, tabs: s.tabs.filter(tab => !tab.mergedInto) };
   const w=new ExcelJS.Workbook();
   w.creator='restoOS';w.created=snapshot;w.calcProperties.fullCalcOnLoad=true;
   function sheet(name,headers,rows) {

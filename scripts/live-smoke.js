@@ -43,7 +43,7 @@ try {
   const photo=await fetch(menu.photo);assert.equal(photo.status,200);assert.match(photo.headers.get('content-type'),/image\/webp/);
   check('menu image uploaded, processed, publicly readable and persisted');
   await call('m','action',{action:'menuSave',menuId:menu.id,name:marker,price:17000,category:'QA',image:'data:image/png;base64,aGVsbG8='},400);
-  const orderBody={name:marker,items:[{menuId:menu.id,qty:2,price:17000}],requestId:randomUUID()};
+  const orderBody={name:marker,sessionTabId:null,items:[{menuId:menu.id,qty:2,price:17000}],requestId:randomUUID()};
   const [first,retry]=await Promise.all([call('a','orders',orderBody),call('a','orders',orderBody)]);
   orderIds.add(first.orderId);tabIds.add(first.tabId);assert.equal(first.orderId,retry.orderId);
   assert.equal((await call('b','state')).orders.length,0);
