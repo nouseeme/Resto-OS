@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {useProtectedFetch} from './protected-fetch.js';
+import {existsSync} from 'node:fs';
+if(existsSync('.env'))process.loadEnvFile('.env');
+const base=process.argv[2];if(!base)throw new Error('Provide the exact deployment URL');
+if(process.argv.includes('--protected'))useProtectedFetch(base);
+const health=await fetch(base+'/api/health');assert.equal(health.status,200);assert.equal((await health.json()).database,'supabase');
+const portal=await fetch(base+'/portal');assert.equal(portal.status,200);const html=await portal.text();
+const asset=html.match(/src="(\/assets\/[^\"]+\.js)"/)[1];
+const remote=Buffer.from(await (await fetch(base+asset)).arrayBuffer()),local=await readFile('dist'+asset);
+assert.equal(createHash('sha256').update(remote).digest('hex'),createHash('sha256').update(local).digest('hex'));
+const staff=await fetch(base+'/ruang-staf');assert.equal(staff.status,200);assert.match(staff.headers.get('x-robots-tag'),/noindex/);
+const state=await (await fetch(base+'/api/state?portal=1')).json();
+assert.equal(state.actor,null);assert.equal(state.setupRequired,false);assert.equal(state.features.menuImageUpload,true);assert.equal(state.orders.length,0);assert.ok(Array.isArray(state.menu));
+const setup=await fetch(base+'/api/setup',{method:'POST',headers:{'Content-Type':'application/json',Origin:base},body:JSON.stringify({password:'not-a-real-credential'})});assert.equal(setup.status,403);
+console.log('PASS API and Supabase health, public/staff routes, exact deployed frontend build, image capability, clean catalog and disabled cloud setup.');

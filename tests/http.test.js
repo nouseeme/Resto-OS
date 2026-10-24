@@ -1,3 +1,4 @@
+import {initialState as fixtureState} from './fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
@@ -29,8 +30,11 @@ test('HTTP access and transaction boundaries across anonymous browsers and staff
   assert.equal((await call('m','workspace',{role:'invalid'})).status,400);
   assert.equal((await call('a','workspace',{role:'manager'})).status,401);
   assert.equal((await call('m','workspace',{role:'manager'})).status,200);
+  assert.equal((await call('m','state')).data.menu.length,0);
+  for(const {photo,...item} of fixtureState().menu) assert.equal((await call('m','action',{action:'menuSave',...item})).status,200);
+  const teaId=(await call('m','state')).data.menu.find(m=>m.name==='Es teh melati').id;
   for(const [username,role] of [['waiter','waiter'],['chef','kitchen']]){assert.equal((await call('m','users',{username,name:username,password:'staff-test-only'})).status,200);assert.equal((await call(username,'login',{username,password:'staff-test-only'})).status,200);assert.equal((await call(username,'state')).data.actor.role,null);assert.equal((await call(username,'workspace',{role})).status,200)}
-  const body={name:'Rizki',items:[{menuId:'m6',qty:2,price:12000}],requestId:randomUUID()};
+  const body={name:'Rizki',items:[{menuId:teaId,qty:2,price:12000}],requestId:randomUUID()};
   const order=await call('a','orders',body);assert.equal(order.status,200);assert.equal((await call('a','orders',body)).data.orderId,order.data.orderId);
   assert.equal((await call('b','orders',{...body,requestId:randomUUID(),tabId:order.data.tabId})).status,409);
   assert.equal((await call('b','state')).data.orders.length,0);
@@ -74,7 +78,7 @@ test('HTTP access and transaction boundaries across anonymous browsers and staff
   assert.equal((await call('waiter','menu-import/commit',commitBody)).status,200);
   assert.equal((await call('waiter','menu-import/commit',commitBody)).status,200);
   const imported=(await call('waiter','state')).data;
-  assert.equal(imported.menu.length,9);assert.equal(imported.menu.find(m=>m.id==='m6').price,19000);assert.equal(imported.orders[0].units[0].price,12000);
+  assert.equal(imported.menu.length,9);assert.equal(imported.menu.find(m=>m.id===teaId).price,19000);assert.equal(imported.orders[0].units[0].price,12000);
   await call('m','logout',{});
   assert.equal((await call('m','login',{username:'admin',password:'manager-test-only'})).status,200);
   assert.equal((await call('m','state')).data.actor.role,null);

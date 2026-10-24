@@ -1,3 +1,4 @@
+import { isCurrency, formatMoney } from '../shared/currency.js';
 import { DatabaseSync } from 'node:sqlite';
 import { randomUUID, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
@@ -17,17 +18,8 @@ export const assert = (condition, message, code) => { if (!condition) fail(messa
 
 export function initialState() {
   return {
-    settings: { name: 'Ruang Rasa', tagline: 'Dari dapur, untuk kebersamaan.', primary: '#a43c2d', accent: '#405644', logo: '', paused: false, autoAcceptSeconds: 15, currency: 'IDR' },
-    menu: [
-      ['m1', 'Nasi goreng kampung', 'Hidangan utama', 38000, 'Nasi goreng bumbu rumah, telur mata sapi, dan acar segar.', 'nasi'],
-      ['m2', 'Ayam panggang rempah', 'Hidangan utama', 48000, 'Ayam panggang dengan rempah pilihan dan sayuran segar.', 'ayam'],
-      ['m3', 'Nasi goreng seafood', 'Hidangan utama', 36000, 'Nasi goreng udang, sayuran, dan perasan jeruk segar.', 'mie'],
-      ['m4', 'Salad kebun', 'Pendamping', 24000, 'Sayuran segar berwarna, alpukat, dan dressing rumah.', 'tahu'],
-      ['m5', 'Pangsit goreng', 'Pendamping', 26000, 'Enam pangsit renyah dengan saus cocol racikan dapur.', 'pangsit'],
-      ['m6', 'Es teh melati', 'Minuman', 12000, 'Teh melati yang diseduh segar, disajikan dingin.', 'teh'],
-      ['m7', 'Jeruk peras', 'Minuman', 18000, 'Jeruk segar, sedikit es. Manis alami tanpa tambahan gula.', 'jeruk'],
-      ['m8', 'Yogurt buah', 'Penutup', 22000, 'Yogurt lembut dengan buah beri segar.', 'puding'],
-    ].map(([id, name, category, price, description, photo]) => ({ id, name, category, price, description, photo: `/images/${photo}.jpg`, available: true })),
+    settings: { name: 'Restoran Anda', tagline: '', primary: '#a43c2d', accent: '#405644', logo: '', paused: false, autoAcceptSeconds: 15, currency: 'IDR' },
+    menu: [],
     tabs: [], orders: [], payments: [], audit: [], bans: {}, requests: {}, users: [], sessions: []
   };
 }
@@ -73,7 +65,7 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
   const units = body.items.flatMap(i => {
     const m = s.menu.find(m => m.id === i.menuId);
     assert(m?.available, `${m?.name ?? 'Menu'} sedang tidak tersedia. Tinjau keranjang Anda.`, 409);
-    assert(i.price === m.price, `Harga ${m.name} berubah menjadi Rp${m.price.toLocaleString('id-ID')}. Tinjau keranjang.`, 409);
+    assert(i.price === m.price, `Harga ${m.name} berubah menjadi ${formatMoney(m.price, s.settings.currency)}. Tinjau keranjang.`, 409);
     assert(Number.isInteger(i.qty) && i.qty > 0 && i.qty <= 30, 'Jumlah menu harus 1–30.');
     totalUnits += i.qty;
     assert(totalUnits <= 100, 'Maksimal 100 porsi per kiriman.');
@@ -115,16 +107,19 @@ export function operate(s, body, actor) {
   } else if (action === 'menuSave') {
     const m = s.menu.find(m => m.id === body.menuId) ?? { id: id(), available: true, photo: '' };
     assert(normalize(body.name).length >= 2 && normalize(body.name).length <= 100, 'Nama menu harus 2–100 karakter.');
-    assert(Number.isSafeInteger(body.price) && body.price > 0 && body.price <= 10000000, 'Harga harus rupiah bulat positif, maksimal Rp10.000.000.');
+    assert(Number.isSafeInteger(body.price) && body.price > 0 && body.price <= 10000000, 'Harga harus angka bulat positif, maksimal 10.000.000 dalam mata uang dasar.');
     Object.assign(m, { name: normalize(body.name), price: body.price, category: normalize(body.category).slice(0, 40) || 'Lainnya', description: String(body.description ?? '').slice(0, 300) });
+    if (Object.hasOwn(body,'photo')) m.photo=body.photo;
     if (!s.menu.some(x => x.id === m.id)) s.menu.push(m);
   } else if (action === 'settings') {
+    const currency = body.currency ?? s.settings.currency ?? 'IDR';
+    assert(isCurrency(currency), 'Pilih mata uang dasar yang valid.');
     assert(normalize(body.name).length >= 2 && normalize(body.name).length <= 60, 'Nama restoran harus 2–60 karakter.');
     assert(/^#[0-9a-f]{6}$/i.test(body.primary) && /^#[0-9a-f]{6}$/i.test(body.accent), 'Warna tidak valid.');
     assert(readableBrand(body.primary) && readableBrand(body.accent), 'Pilih warna utama dan aksen yang lebih gelap agar teks tetap terbaca (kontras minimal 4,5:1).');
     const validLogo = !body.logo || /^data:image\/(png|jpeg|webp);base64,[a-zA-Z0-9+/=]+$/.test(body.logo);
     assert(validLogo && (body.logo?.length ?? 0) < 700000, 'Logo harus PNG, JPG, atau WebP di bawah 500 KB.');
-    Object.assign(s.settings, { name: normalize(body.name), tagline: String(body.tagline ?? '').slice(0, 120), primary: body.primary, accent: body.accent, logo: body.logo ?? '' });
+    Object.assign(s.settings, { currency, name: normalize(body.name), tagline: String(body.tagline ?? '').slice(0, 120), primary: body.primary, accent: body.accent, logo: body.logo ?? '' });
   } else {
     const o = s.orders.find(o => o.id === body.orderId); assert(o, 'Order tidak ditemukan.', 404);
     const units = body.unitIds ? o.units.filter(u => body.unitIds.includes(u.id)) : o.units;

@@ -1,6 +1,7 @@
+import {initialState} from './fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { initialState, placeOrder, operate, tick, due, id, openStore } from '../server/store.js';
+import { placeOrder, operate, tick, due, id, openStore } from '../server/store.js';
 const waiter={id:'staff',name:'Garson',role:'waiter'}, kitchen={id:'chef',name:'Dapur',role:'kitchen'}, manager={id:'manager',name:'Manajer',role:'manager'};
 const request=(name='Rizki',qty=2)=>({name,requestId:id(),items:[{menuId:'m6',qty,price:12000}]});
 const unitAction=(s,action,actor,order=s.orders[0],units=order.units)=>operate(s,{action,orderId:order.id,unitIds:units.map(u=>u.id),method:'Tunai',reason:'Salah pesan'},actor);

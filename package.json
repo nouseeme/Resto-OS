@@ -7,15 +7,19 @@
     "dev": "node server/index.js",
     "build": "vite build",
     "start": "node server/index.js --production",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "backup": "node scripts/backup-cloud.js",
+    "test:security": "node scripts/security-smoke.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.468.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "sharp": "0.35.5",
     "sonner": "^2.0.7"
   },
   "devDependencies": {

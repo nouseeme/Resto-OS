@@ -1,0 +1,11 @@
+.env*
+data
+.git
+.agents
+.claude
+.codex
+.impeccable
+.taste-skill
+tests
+scripts
+docs

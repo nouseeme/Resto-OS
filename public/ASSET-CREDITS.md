@@ -1,5 +1,8 @@
-# Assets
+# Asset credits
 
-Newsreader and Manrope fonts: Fontsource CDN, Google Fonts, SIL Open Font License. Font origins are recorded in scripts/fetch-assets.ps1. Licenses: https://github.com/google/fonts/blob/main/ofl/newsreader/OFL.txt and https://github.com/google/fonts/blob/main/ofl/manrope/OFL.txt.
+The interface uses locally served Newsreader and Manrope fonts. Each is distributed under the SIL Open Font License; retain these license files when redistributing the fonts:
 
-Menu photographs: Unsplash images listed in scripts/fetch-assets.ps1, downloaded as local assets. These are illustrative catalog examples, not photographs of the restaurant's actual dishes. The interface labels the initial catalog and photographs as examples. Replace them with the restaurant's own images before pilot.
+- Newsreader: `fonts/Newsreader-OFL.txt`
+- Manrope: `fonts/Manrope-OFL.txt`
+
+The application serving mark is an inline SVG. Interface icons come from the declared Lucide dependency. Menu photography is supplied by staff uploads; no demonstration photos are included.

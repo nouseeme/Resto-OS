@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 import { createHash } from 'node:crypto';
 import { assert, normalize, key, id, audit } from './store.js';
 
-export const MENU_COLUMNS=['Nama menu','Kategori','Harga (IDR)','Deskripsi','Tersedia'];
+export const MENU_COLUMNS=['Nama menu','Kategori','Harga','Deskripsi','Tersedia'];
 export const catalogRevision=menu=>createHash('sha256').update(JSON.stringify(menu)).digest('hex');
 
 function guardArchive(buffer) {
@@ -47,7 +47,7 @@ export async function parseMenuFile(file) {
   const sheet=book.getWorksheet('Menu');assert(sheet,'Sheet “Menu” tidak ditemukan. Gunakan template yang disediakan.');
   assert(sheet.rowCount<=1001,'Maksimal 1.000 baris menu per impor.');
   const header=sheet.getRow(1);
-  assert(MENU_COLUMNS.every((name,i)=>normalize(header.getCell(i+1).value)===name),'Header harus: '+MENU_COLUMNS.join(', ')+'.');
+  assert(MENU_COLUMNS.every((name,i)=>(normalize(header.getCell(i+1).value)===name || (i===2 && normalize(header.getCell(i+1).value)==='Harga (IDR)'))),'Header harus: '+MENU_COLUMNS.join(', ')+'.');
   const rows=[],errors=[],seen=new Set();
   for(let n=2;n<=sheet.rowCount;n++){
     const values=MENU_COLUMNS.map((_,i)=>sheet.getRow(n).getCell(i+1).value);
@@ -58,7 +58,7 @@ export async function parseMenuFile(file) {
     const rowErrors=[];
     if(name.length<2||name.length>100)rowErrors.push('Nama menu harus 2–100 karakter.');
     if(!category||category.length>40)rowErrors.push('Kategori harus 1–40 karakter.');
-    if(!Number.isSafeInteger(price)||price<=0||price>10000000)rowErrors.push('Harga harus angka rupiah bulat 1–10.000.000, tanpa “Rp” atau pemisah ribuan.');
+    if(!Number.isSafeInteger(price)||price<=0||price>10000000)rowErrors.push('Harga harus angka bulat 1–10.000.000 dalam mata uang dasar, tanpa simbol mata uang atau pemisah ribuan.');
     if(description.length>300)rowErrors.push('Deskripsi maksimal 300 karakter.');
     if(!['ya','tidak'].includes(availability))rowErrors.push('Tersedia harus “Ya” atau “Tidak”.');
     if(seen.has(key(name)))rowErrors.push('Nama menu ganda dalam file.');seen.add(key(name));

@@ -1,9 +1,10 @@
+import {initialState} from './fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import ExcelJS from 'exceljs';
 import {parseMenuFile,previewMenuImport,commitMenuImport,MENU_COLUMNS,normalizeSpreadsheetArchive} from '../server/menu-import.js';
 import {readFile} from 'node:fs/promises';
-import {initialState,placeOrder,id,openStore} from '../server/store.js';
+import {placeOrder,id,openStore} from '../server/store.js';
 
 const manager={id:'manager',name:'Manager',role:'manager'};
 export async function workbookFile(rows,headers=MENU_COLUMNS) {
@@ -13,6 +14,9 @@ test('downloadable template has the exact import headers, data entry validation 
   const book=new ExcelJS.Workbook();await book.xlsx.load(await normalizeSpreadsheetArchive(await readFile('public/templates/template-menu-restoOS.xlsx')));
   assert.deepEqual(book.getWorksheet('Menu').getRow(1).values.slice(1),MENU_COLUMNS);
   assert.ok(book.getWorksheet('Panduan'));assert.equal(book.getWorksheet('Menu').getCell('E2').dataValidation.type,'list');
+  assert.equal(book.getWorksheet('Menu').getCell('E1001').dataValidation.type,'list');
+  assert.equal(book.getWorksheet('Menu').getCell('A2').value,null);
+  assert.equal(book.getWorksheet('Panduan').getCell('A16').value,null);
   book.getWorksheet('Menu').getRow(2).values=['Menu uji','Minuman',16000,'Contoh','Ya'];
   const parsed=await parseMenuFile(Buffer.from(await book.xlsx.writeBuffer()).toString('base64'));
   assert.equal(parsed.errors.length,0);assert.equal(parsed.rows[0].price,16000);

@@ -108,7 +108,7 @@ components:
 
 The restaurant's menu book supplies the material language: ivory paper, charcoal ink, fine warm rules, expressive serif headings, and restrained brick red. Three distinct staff workspaces apply that language to their tasks: a full-width kitchen production board, a horizontal waiter service workflow, and a management report sidebar. A shared role chooser introduces these spaces after login. The customer portal opens it into a photographic menu with more generous editorial headings.
 
-This is a source-first record of the implemented Operate-mode app, extracted from `PRODUCT.md`, `src/styles.css`, `src/StaffWorkspaces.jsx`, `src/main.jsx`, `src/TransactionPanels.jsx`, `src/ManagementOverview.jsx`, `src/CreateOrder.jsx`, and `src/MenuImport.jsx`. The transaction, kitchen-demand, reporting, and Excel-import extension continues this incumbent world. The PRD's menu-book direction informs the world; no approved image composition is claimed. The frontmatter records the default implementation tokens. Restaurant settings can override primary and secondary CSS variables at runtime, so those two values are defaults rather than immutable restaurant identity colors.
+The implementation follows `PRODUCT.md` and the shared styles in `src/styles.css`. Staff workspaces, customer transactions, reporting, and catalog import use the same paper-and-ink system. The frontmatter records default tokens; restaurant settings can override primary and secondary colors at runtime.
 
 **Key Characteristics:**
 
@@ -162,7 +162,7 @@ Newsreader provides the menu-book voice; Manrope keeps dense interface text prec
 - **Title:** section headings use the title role; dish titles use (29px) on desktop, kitchen production customer headings use Manrope (24px, weight 650), dialogs (29px), and small headings (22px).
 - **Body:** the global default is defined above; working copy is frequently (11–13px), with supporting metadata (9–12px) and some compact labels (8px) at the smallest breakpoint.
 - **Label:** buttons use the label role; tabs and navigation use contextual (10–12px) sizes. Wordmark metadata alone uses small uppercase lettering and wide tracking.
-- **Numeric emphasis:** Newsreader metrics use (35px) by default; payment totals rise to (45px). Prices retain IDR formatting without fractional digits.
+- **Numeric emphasis:** Newsreader metrics use (35px) by default; payment totals rise to (45px). Prices follow the restaurant’s selected base currency without fractional digits.
 
 **The Two Voices Rule.** Keep editorial headings and emphasized totals in Newsreader; use Manrope for controls, status, operational detail, and kitchen production headings.
 
@@ -237,11 +237,11 @@ Management's **Transaksi belum selesai** includes paid transactions whose operat
 
 ### Excel catalogue import
 
-The catalogue provides a downloadable Excel template and an **Impor menu dari Excel** dialog. File selection accepts .xlsx up to (500 KB), with up to (1,000) menu rows. The preview shows file name, create/update/error counts, source row numbers, menu names, prices, availability, and intended changes. Existing names update entries; new names add entries. Validation problems identify their rows and explicitly say nothing has been saved; commit errors remain visible in the dialog. **Simpan impor** is disabled while processing, offline, before preview, or when validation errors exist. The complete file is validated before an atomic save; historic order prices remain intact. Menu photo upload stays visibly deferred until Supabase Storage is connected, and photos are not imported from Excel.
+The catalogue provides a downloadable Excel template and an **Impor menu dari Excel** dialog. File selection accepts .xlsx up to (500 KB), with up to (1,000) menu rows. The preview shows file name, create/update/error counts, source row numbers, menu names, prices, availability, and intended changes. Existing names update entries; new names add entries. Validation problems identify their rows and explicitly say nothing has been saved; commit errors remain visible in the dialog. **Simpan impor** is disabled while processing, offline, before preview, or when validation errors exist. The complete file is validated before an atomic save; historic order prices remain intact. Menu photo upload is available when Storage is configured; photos are not imported from Excel.
 
 ### Customer menu and photography
 
-The portal pairs food photography with serif dish names, category, short description, price, and a clear add action. Photos use cover cropping: default aspect ratio (1.5), and (1.05) on mobile and 768–1000px tablets. Titles reserve two lines and descriptions reserve three, with longer copy clamped. Each row's photo, price, and Add-button positions match even when copy lengths differ. The staff catalogue uses smaller square/portrait thumbnails. Unavailable photos become translucent and mostly grayscale; the button explicitly reads “Habis.” Missing or failed photos fall back to the dish name on a warm neutral block. Current catalogue photography is example content and is explicitly disclosed in both menu and portal copy.
+The portal pairs food photography with serif dish names, category, short description, price, and a clear add action. Photos use cover cropping: default aspect ratio (1.5), and (1.05) on mobile and 768–1000px tablets. Titles reserve two lines and descriptions reserve three, with longer copy clamped. Each row's photo, price, and Add-button positions match even when copy lengths differ. The staff catalogue uses smaller square/portrait thumbnails. Unavailable photos become translucent and mostly grayscale; the button explicitly reads “Habis.” Missing or failed photos fall back to the dish name on a warm neutral block. New installations have an empty catalog; photographs come from staff uploads.
 
 ### Dialogs, feedback, and accessibility
 
@@ -257,7 +257,7 @@ Form labels and icon-button accessible names identify actions. Service state alw
 - **Do** preserve the Newsreader and Manrope role split.
 - **Do** pair service colors with explicit Indonesian labels.
 - **Do** preserve the implemented 44px action targets and visible keyboard focus.
-- **Do** keep example catalogue photography clearly disclosed and provide the existing text fallback.
+- **Do** provide the existing text fallback when a menu has no photo.
 - **Do** preserve the three distinct workspace compositions and keep session workspace selection separate from staff identity.
 - **Do** keep the public entry at `/portal`, with `/` redirecting there. Staff login and workspace live at the unlisted `/ruang-staf`; never link them from public navigation.
 - **Do** use two equal menu columns on phones, tablets, and laptops. Each row uses matching image ratios, two-line title slots and three-line description slots with overflow clamped. Full menu names remain in image alt text, control labels, and title attributes. Bottom-aligned price/button grids must line up across neighboring dishes. At 768–1000px and on phones, stack each price above its full-width 44px Add button.
@@ -266,5 +266,4 @@ Form labels and icon-button accessible names identify actions. Service state alw
 
 - **Don't** turn every ledger row into a floating card or spread the mobile cart shadow to ordinary panels.
 - **Don't** use accent color as a replacement for readable labels or status text.
-- **Don't** present sample photography as confirmed restaurant catalogue assets.
 - **Don't** erase wrapping, horizontal tab scrolling, or mobile cart access when extending the layout.

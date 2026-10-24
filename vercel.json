@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "regions": ["fra1"],
+  "functions": { "api/index.js": { "maxDuration": 30 } },
+  "redirects": [
+    { "source": "/", "destination": "/portal", "permanent": false },
+    { "source": "/index.html", "destination": "/portal", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/portal", "destination": "/index.html" },
+    { "source": "/ruang-staf", "destination": "/index.html" }
+  ],
+  "headers": [
+    { "source": "/ruang-staf", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
+    { "source": "/(.*)", "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+      { "key": "X-Frame-Options", "value": "DENY" }
+    ] }
+  ]
+}

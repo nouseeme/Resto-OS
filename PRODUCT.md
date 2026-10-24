@@ -19,10 +19,10 @@ Satu restoran, satu dapur. Nama unik selama transaksi aktif; token browser anoni
 
 Garson membuka satu tombol Buat order, mencari nama transaksi aktif, atau menambah pelanggan saat tidak ada kecocokan. Detail menampilkan sisa tagihan total dan per pesanan, beserta edit nama di samping nama pelanggan. Dapur menampilkan kebutuhan masak per menu dalam panel samping sticky di desktop/tablet dan ringkasan yang dapat dibuka di atas antrean pada ponsel. Manajemen menghitung transaksi belum selesai; pilihan pelanggan menghitung porsi dipesan dikurangi pembatalan tanpa bergantung pada pembayaran.
 
-Katalog mendukung template dan impor Excel dengan pratinjau. Nama menu yang sama memperbarui katalog, nama baru menambah menu. Validasi dilakukan untuk seluruh file sebelum penyimpanan atomik; harga pesanan lama tetap. Upload gambar ditandai belum aktif sampai Supabase Storage terhubung.
+Katalog mendukung template dan impor Excel dengan pratinjau. Nama menu yang sama memperbarui katalog, nama baru menambah menu. Validasi dilakukan untuk seluruh file sebelum penyimpanan atomik; harga pesanan lama tetap. Foto menu mendukung PNG/JPG/WebP maksimal 2 MB saat Storage dikonfigurasi; unggah saat simpan, konversi WebP maksimal 1280px, ganti/hapus hanya dari Manajemen. Impor Excel mempertahankan foto.
 
 ## Confirmed configuration
-IDR, harga final tanpa pajak tambahan. Semua pencatatan dan pekerjaan non-UI memakai UTC; UI mengikuti zona waktu lokal perangkat. Auto-accept 15 detik, dengan suara yang diaktifkan pengguna di browser dapur.
+Mata uang dasar dipilih di Manajemen → Pengaturan saat inisialisasi (default IDR). Seluruh harga dan laporan mengikuti pilihan ini tanpa konversi nominal. Harga berupa angka bulat, final tanpa pajak tambahan. Semua pencatatan dan pekerjaan non-UI memakai UTC; UI mengikuti zona waktu lokal perangkat. Auto-accept 15 detik, dengan suara yang diaktifkan pengguna di browser dapur.
 
 ## Capabilities and Constraints
 Halaman utama (`/`) mengarahkan langsung ke menu publik (`/portal`). Portal tidak menampilkan tautan login atau menu staf. Login dan ruang staf hanya tersedia lewat alamat unlisted `/ruang-staf`, dengan autentikasi dan pemeriksaan peran pada server tetap berlaku.
@@ -30,13 +30,15 @@ Halaman utama (`/`) mengarahkan langsung ke menu publik (`/portal`). Portal tida
 Portal, Pelanggan & Order, Siap Diantar, KDS, menu, branding, laporan dan akses staf. Pembayaran manual per unit atau sisa order. Pembatalan berbayar ditahan sampai kebijakan koreksi ditetapkan. Batas spam adalah konfigurasi pilot tentatif. Tidak ada akun pelanggan, payment gateway, inventory, atau mode offline.
 
 ## Brand Commitments
-Bahasa Indonesia alami. Kanvas ivory, judul serif editorial, teks gelap, garis tipis, aksen vermilion hemat. Ikuti referensi visual yang ditautkan PRD.
-
-## Evidence on Hand
-PRD: C:/Users/NoufalRizka/Documents/ChatGPT/restoOS/restoOS_PRD_ID.md. Referensi: assets/restoOS-visual-reference.png di folder yang sama. Katalog awal merupakan contoh dan ditandai di aplikasi.
+Bahasa Indonesia alami. Kanvas ivory, judul serif editorial, teks gelap, garis tipis, aksen vermilion hemat. Ikuti token dan pola antarmuka dalam DESIGN.md.
 
 ## Implementation assumptions
 Node 24, React, SQLite dipilih sebagai implementasi lokal yang mudah dijalankan. Pembatalan unit yang sudah dibayar atau diantar ditolak; refund belum tersedia. Nama 2–60 karakter; identitas pesanan stabil memakai ID transaksi dan urutan pesanan. Sesi autentikasi staf tetap terpisah dari model pesanan. Batas awal: kiriman kelima dalam 60 detik memicu ban 15, 30, lalu 60 menit. Limiter restoran 20/menit tidak diaktifkan.
 
+Deployment memakai Vercel dengan Node 24 dan Supabase untuk PostgreSQL, Storage, serta Cron auto-accept. SQLite tetap tersedia melalui RESTO_DB eksplisit untuk QA. Sesi staf, idempotensi dan pembatasan login disimpan persisten. Polling staf 5 detik setelah respons dan portal 15 detik; tab tersembunyi berhenti polling. Lihat docs/PRODUCTION.md untuk konfigurasi, bukti verifikasi dan batas operasional.
+
 ## Accessibility & Inclusion
 Target sentuh 44px, fokus keyboard, label status eksplisit, reduced motion, layout 360px hingga desktop.
+
+## Initial state
+Instalasi baru dimulai dengan katalog, transaksi, dan akun kosong. Identitas awal adalah Restoran Anda dengan mata uang IDR. Data sintetis hanya berada pada fixture tes.
