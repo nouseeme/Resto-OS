@@ -29,8 +29,6 @@ export async function prepareMenuImage(dataUrl,menuId) {
 export async function removeMenuImage(url) {
   const prefix=`${process.env.SUPABASE_URL}/storage/v1/object/public/menu-images/`;
   if(!url?.startsWith(prefix))return;
-  try {
-    const {error}=await supabase().storage.from('menu-images').remove([url.slice(prefix.length)]);
-    if(error)console.error('Storage cleanup failed',error.code??error.statusCode);
-  } catch { console.error('Storage cleanup failed'); }
+  const {error}=await supabase().storage.from('menu-images').remove([url.slice(prefix.length)]);
+  if(error)throw Object.assign(new Error('Gambar lama belum berhasil dihapus dari Storage.'),{status:503});
 }

@@ -1,3 +1,4 @@
+import { queueImageCleanup, createImageCleanup } from './image-cleanup.js';
 import express from 'express';
 import { authenticateStaff, staffStillAllowed, createStaff } from './staff-auth.js';
 import path from 'node:path';
@@ -14,6 +15,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const cloud = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY && !process.env.RESTO_DB);
 const imagesEnabled = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY);
 const store = cloud ? openCloudStore() : openStore(process.env.RESTO_DB ?? path.join(root, 'data', 'resto.sqlite'));
+const cleanupMenuImages=createImageCleanup(store,removeMenuImage);
 if (process.env.VERCEL && !cloud) throw new Error('Supabase configuration is required on Vercel.');
 export const app = express();
 if (process.env.VERCEL) app.set('trust proxy', 1);
@@ -49,6 +51,7 @@ app.use('/api', async (req, res, next) => {
 });
 app.get('/api/state', async(req,res) => {
   const s = req.state;
+  if(req.actor?.role==='manager')await cleanupMenuImages();
   res.set('X-Resto-Images', cloud ? 'enabled' : 'disabled');
   const publicSettings = s.settings; const features={menuImageUpload:imagesEnabled,staffAuth:cloud?'supabase':'local'};
   const ownTabs = s.tabs.filter(t=>t.token === req.guest);
@@ -153,15 +156,20 @@ app.post('/api/action',async(req,res)=>{
   try {
     const result=await mutate(req,s=>{
       oldPhoto=s.menu.find(m=>m.id===body.menuId)?.photo;
-      return operate(s,body,req.actor);
+      const result=operate(s,body,req.actor);
+      if(['menuSave','menuDelete'].includes(body.action) && oldPhoto && !s.menu.some(item=>item.photo===oldPhoto))queueImageCleanup(s,oldPhoto);
+      return result;
     });
-    if ((uploaded || body.photo==='') && oldPhoto && oldPhoto!==uploaded) await removeMenuImage(oldPhoto);
+    if(['menuSave','menuDelete'].includes(body.action)){
+      const pending=await cleanupMenuImages();
+      if(pending)result.warning='Menu tersimpan. Penghapusan gambar dari Storage belum selesai dan akan dicoba lagi otomatis saat Management aktif.';
+    }
     res.json(result);
   } catch(error) {
     // A lost RPC response can occur after commit. Never delete a photo that
     // might already be referenced by the persisted catalog.
     if(uploaded) {
-      try { if(!(await store.read()).menu.some(m=>m.photo===uploaded)) await removeMenuImage(uploaded); }
+      try { await store.transaction(s=>{if(!s.menu.some(m=>m.photo===uploaded))queueImageCleanup(s,uploaded)});await cleanupMenuImages(); }
       catch { console.error('Photo cleanup deferred because database state could not be verified.'); }
     }
     throw error;

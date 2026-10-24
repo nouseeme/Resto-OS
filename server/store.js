@@ -1,3 +1,4 @@
+import { languageCode } from '../shared/menu-languages.js';
 import { isCurrency, formatMoney } from '../shared/currency.js';
 import { DatabaseSync } from 'node:sqlite';
 import { randomUUID, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
@@ -90,7 +91,7 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
 
 export function operate(s, body, actor) {
   const { action } = body;
-  const allowed = { rename: ['waiter'], pay: ['waiter'], deliver: ['waiter'], accept: ['kitchen'], ready: ['kitchen'], cancel: ['kitchen','waiter'], unban: ['waiter'], pause: ['kitchen','manager'], menuToggle: ['waiter','kitchen','manager'], menuSave: ['manager'], settings: ['manager'] };
+  const allowed = { rename: ['waiter'], pay: ['waiter'], deliver: ['waiter'], accept: ['kitchen'], ready: ['kitchen'], cancel: ['kitchen','waiter'], unban: ['waiter'], pause: ['kitchen','manager'], menuToggle: ['waiter','kitchen','manager'], menuSave: ['manager'], menuDelete: ['manager'], settings: ['manager'] };
   assert(allowed[action]?.includes(actor.role), 'Peran Anda tidak dapat melakukan tindakan ini.', 403);
   if (action === 'rename') {
     const t = s.tabs.find(t => t.id === body.tabId && !t.closedAt); assert(t, 'Transaksi tidak aktif.', 409);
@@ -104,11 +105,28 @@ export function operate(s, body, actor) {
   } else if (action === 'pause') s.settings.paused = Boolean(body.paused);
   else if (action === 'menuToggle') {
     const m = s.menu.find(m => m.id === body.menuId); assert(m, 'Menu tidak ditemukan.'); m.available = Boolean(body.available);
+  } else if (action === 'menuDelete') {
+    const index=s.menu.findIndex(m=>m.id===body.menuId);
+    assert(index>=0, 'Menu tidak ditemukan.',404);
+    s.menu.splice(index,1);
   } else if (action === 'menuSave') {
-    const m = s.menu.find(m => m.id === body.menuId) ?? { id: id(), available: true, photo: '' };
+    const m = s.menu.find(m => m.id === body.menuId) ?? { id: body.menuId ?? id(), available: true, photo: '' };
     assert(normalize(body.name).length >= 2 && normalize(body.name).length <= 100, 'Nama menu harus 2–100 karakter.');
     assert(Number.isSafeInteger(body.price) && body.price > 0 && body.price <= 10000000, 'Harga harus angka bulat positif, maksimal 10.000.000 dalam mata uang dasar.');
-    Object.assign(m, { name: normalize(body.name), price: body.price, category: normalize(body.category).slice(0, 40) || 'Lainnya', description: String(body.description ?? '').slice(0, 300) });
+    let translations=m.descriptionTranslations ?? {};
+    if(Object.hasOwn(body,'descriptionTranslations')){
+      assert(body.descriptionTranslations && typeof body.descriptionTranslations==='object' && !Array.isArray(body.descriptionTranslations),'Deskripsi bahasa tidak valid.');
+      translations={};
+      for(const [raw,text] of Object.entries(body.descriptionTranslations)){
+        const code=languageCode(raw);
+        assert(code && code!=='id','Kode bahasa tidak valid. Gunakan Deskripsi utama untuk ID.');
+        assert(!Object.hasOwn(translations,code),'Kode bahasa ganda.');
+        assert(typeof text==='string' && text.length<=300,'Deskripsi bahasa maksimal 300 karakter.');
+        translations[code]=text.trim();
+      }
+    }
+    Object.assign(m, { descriptionTranslations:translations, name: normalize(body.name), price: body.price, category: normalize(body.category).slice(0, 40) || 'Lainnya', description: String(body.description ?? '').slice(0, 300) });
+    if (Object.hasOwn(body,'available')) m.available=Boolean(body.available);
     if (Object.hasOwn(body,'photo')) m.photo=body.photo;
     if (!s.menu.some(x => x.id === m.id)) s.menu.push(m);
   } else if (action === 'settings') {
