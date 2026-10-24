@@ -1,0 +1,461 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-24T08:40:39.461431Z",
+  "title": "Design System: restoOS",
+  "extensions": {
+    "shadows": [
+      {
+        "purpose": "Separates the fixed mobile cart action from scrolling menu content.",
+        "name": "mobile-cart",
+        "value": "0 5px 18px #38292026"
+      }
+    ],
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Printed Brick Red",
+        "tonalRamp": [
+          "oklch(15% 0.13 30)",
+          "oklch(26% 0.13 30)",
+          "oklch(37% 0.13 30)",
+          "oklch(48% 0.13 30)",
+          "oklch(59% 0.13 30)",
+          "oklch(70% 0.13 30)",
+          "oklch(82% 0.13 30)",
+          "oklch(95% 0.13 30)"
+        ]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Herb Green",
+        "tonalRamp": [
+          "oklch(15% 0.035 145)",
+          "oklch(26% 0.035 145)",
+          "oklch(37% 0.035 145)",
+          "oklch(48% 0.035 145)",
+          "oklch(59% 0.035 145)",
+          "oklch(70% 0.035 145)",
+          "oklch(82% 0.035 145)",
+          "oklch(95% 0.035 145)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Cancellation Red",
+        "tonalRamp": [
+          "oklch(15% 0.12 30)",
+          "oklch(26% 0.12 30)",
+          "oklch(37% 0.12 30)",
+          "oklch(48% 0.12 30)",
+          "oklch(59% 0.12 30)",
+          "oklch(70% 0.12 30)",
+          "oklch(82% 0.12 30)",
+          "oklch(95% 0.12 30)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Ivory Paper",
+        "tonalRamp": [
+          "oklch(15% 0.014 90)",
+          "oklch(26% 0.014 90)",
+          "oklch(37% 0.014 90)",
+          "oklch(48% 0.014 90)",
+          "oklch(59% 0.014 90)",
+          "oklch(70% 0.014 90)",
+          "oklch(82% 0.014 90)",
+          "oklch(95% 0.014 90)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Fresh Page",
+        "tonalRamp": [
+          "oklch(15% 0.01 90)",
+          "oklch(26% 0.01 90)",
+          "oklch(37% 0.01 90)",
+          "oklch(48% 0.01 90)",
+          "oklch(59% 0.01 90)",
+          "oklch(70% 0.01 90)",
+          "oklch(82% 0.01 90)",
+          "oklch(95% 0.01 90)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Charcoal Ink",
+        "tonalRamp": [
+          "oklch(15% 0.012 90)",
+          "oklch(26% 0.012 90)",
+          "oklch(37% 0.012 90)",
+          "oklch(48% 0.012 90)",
+          "oklch(59% 0.012 90)",
+          "oklch(70% 0.012 90)",
+          "oklch(82% 0.012 90)",
+          "oklch(95% 0.012 90)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Warm Gray Ink",
+        "tonalRamp": [
+          "oklch(15% 0.02 85)",
+          "oklch(26% 0.02 85)",
+          "oklch(37% 0.02 85)",
+          "oklch(48% 0.02 85)",
+          "oklch(59% 0.02 85)",
+          "oklch(70% 0.02 85)",
+          "oklch(82% 0.02 85)",
+          "oklch(95% 0.02 85)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Warm Rule",
+        "tonalRamp": [
+          "oklch(15% 0.018 85)",
+          "oklch(26% 0.018 85)",
+          "oklch(37% 0.018 85)",
+          "oklch(48% 0.018 85)",
+          "oklch(59% 0.018 85)",
+          "oklch(70% 0.018 85)",
+          "oklch(82% 0.018 85)",
+          "oklch(95% 0.018 85)"
+        ]
+      },
+      "placeholder": {
+        "role": "neutral",
+        "displayName": "Placeholder Ink",
+        "tonalRamp": [
+          "oklch(15% 0.022 80)",
+          "oklch(26% 0.022 80)",
+          "oklch(37% 0.022 80)",
+          "oklch(48% 0.022 80)",
+          "oklch(59% 0.022 80)",
+          "oklch(70% 0.022 80)",
+          "oklch(82% 0.022 80)",
+          "oklch(95% 0.022 80)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Bound Paper",
+        "tonalRamp": [
+          "oklch(15% 0.014 85)",
+          "oklch(26% 0.014 85)",
+          "oklch(37% 0.014 85)",
+          "oklch(48% 0.014 85)",
+          "oklch(59% 0.014 85)",
+          "oklch(70% 0.014 85)",
+          "oklch(82% 0.014 85)",
+          "oklch(95% 0.014 85)"
+        ]
+      },
+      "inset": {
+        "role": "neutral",
+        "displayName": "Inset Paper",
+        "tonalRamp": [
+          "oklch(15% 0.016 85)",
+          "oklch(26% 0.016 85)",
+          "oklch(37% 0.016 85)",
+          "oklch(48% 0.016 85)",
+          "oklch(59% 0.016 85)",
+          "oklch(70% 0.016 85)",
+          "oklch(82% 0.016 85)",
+          "oklch(95% 0.016 85)"
+        ]
+      },
+      "on-brand": {
+        "role": "neutral",
+        "displayName": "Warm White Ink",
+        "tonalRamp": [
+          "oklch(15% 0.012 80)",
+          "oklch(26% 0.012 80)",
+          "oklch(37% 0.012 80)",
+          "oklch(48% 0.012 80)",
+          "oklch(59% 0.012 80)",
+          "oklch(70% 0.012 80)",
+          "oklch(82% 0.012 80)",
+          "oklch(95% 0.012 80)"
+        ]
+      },
+      "navigation-active": {
+        "role": "neutral",
+        "displayName": "Selected Paper",
+        "tonalRamp": [
+          "oklch(15% 0.02 80)",
+          "oklch(26% 0.02 80)",
+          "oklch(37% 0.02 80)",
+          "oklch(48% 0.02 80)",
+          "oklch(59% 0.02 80)",
+          "oklch(70% 0.02 80)",
+          "oklch(82% 0.02 80)",
+          "oklch(95% 0.02 80)"
+        ]
+      },
+      "kitchen-header": {
+        "role": "neutral",
+        "displayName": "Station Charcoal"
+      },
+      "kitchen-header-muted": {
+        "role": "neutral",
+        "displayName": "Station Supporting Ink"
+      },
+      "kitchen-header-hover": {
+        "role": "neutral",
+        "displayName": "Station Hover"
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "purpose": "Global text base with denser contextual overrides.",
+        "displayName": "Interface Body"
+      },
+      "label": {
+        "purpose": "Buttons and compact actions.",
+        "displayName": "Control Label"
+      },
+      "headline": {
+        "purpose": "Editorial management and waiter page titles.",
+        "displayName": "Staff Headline"
+      },
+      "display": {
+        "purpose": "Large customer menu introduction; responsive sizing is documented in DESIGN.md.",
+        "displayName": "Portal Display"
+      },
+      "title": {
+        "purpose": "Editorial section headings.",
+        "displayName": "Section Title"
+      },
+      "production-headline": {
+        "displayName": "Production Headline",
+        "purpose": "Manrope kitchen production page title, 28px on phones."
+      },
+      "production-title": {
+        "displayName": "Production Ticket Title",
+        "purpose": "Manrope kitchen customer heading for scanning production tickets."
+      }
+    },
+    "motion": [
+      {
+        "purpose": "Paper button hover feedback.",
+        "name": "button-background",
+        "value": "background 140ms"
+      },
+      {
+        "purpose": "Mobile staff navigation.",
+        "name": "drawer",
+        "value": "transform 180ms ease-out"
+      },
+      {
+        "purpose": "Availability switch feedback.",
+        "name": "availability-thumb",
+        "value": "transform 150ms"
+      },
+      {
+        "purpose": "Loading indicator. Reduced-motion preference disables animations and transitions.",
+        "name": "busy",
+        "value": "spin 900ms linear infinite"
+      }
+    ],
+    "breakpoints": [
+      {
+        "query": "(max-width:380px)",
+        "name": "compact",
+        "value": "380px"
+      },
+      {
+        "query": "(max-width:767px)",
+        "name": "mobile",
+        "value": "767px"
+      },
+      {
+        "query": "(min-width:768px) and (max-width:850px)",
+        "name": "narrow-portal",
+        "value": "850px"
+      },
+      {
+        "query": "(max-width:1000px)",
+        "name": "tablet",
+        "value": "1000px"
+      },
+      {
+        "query": "(max-width:1200px)",
+        "name": "desktop-compact",
+        "value": "1200px"
+      },
+      {
+        "query": "(min-width:1600px)",
+        "name": "portal-wide",
+        "value": "1600px"
+      }
+    ],
+    "tonalRampNote": "Tonal ramps are synthesized OKLCH hue-family previews for the documentation panel. They are not additional implemented UI tokens; frontmatter hex values remain normative.",
+    "workspaceLayouts": {
+      "chooser": "After each login, every authenticated staff member chooses Dapur, Garson, or Manajemen. Refresh retains the active session choice; the switch icon beside logout resets it. A null role exposes no operational data or actions. Three ruled columns become one column at 767px.",
+      "kitchen": "Full-width production KDS, dark station header, horizontal queue/availability tabs, Manrope headings and 1920px canvas. Queue beside a 290px sticky demand panel (top 20px, gap 25px); 240px panel at 768–1100px. At 767px replace the panel with a collapsible summary above the one-column queue.",
+      "waiter": "Paper service header, horizontal customer/delivery/availability workflow, active-transaction, ready-unit and running-order counters, and 1300px canvas. One Buat order action opens a searchable active-transaction combobox; only unmatched names can create a new transaction. Tabs scroll and counters retain three columns on mobile.",
+      "manager": "Fixed report sidebar with summary, read-only transaction history (Arsip transaksi), catalogue and settings. Sidebar widths 240px, 210px at 1200px, 190px at 1000px; 250px off-canvas drawer at 767px.",
+      "responsive": "At 1000px chooser horizontal padding is 30px; kitchen/waiter padding is 25px. At 767px chooser choices stack, kitchen/waiter padding is 18px, compact account metadata truncates, and station/service annotations hide."
+    },
+    "transactionWorkflow": {
+      "terminology": "Transaksi is the customer grouping previously called Tab; Pesanan is one timestamped submission. Orders belong directly to transactions without order sessions or time-gap grouping. Login/workspace sessions remain separate.",
+      "detail": "Wide ivory dialog with total outstanding balance followed by timestamped orders, each with total, paid and remaining amounts and unit rows. An active Garson transaction has a 44px rename icon beside its customer title. Management detail is read-only.",
+      "closure": "A transaction closes only when financial and operational obligations are complete.",
+      "kitchenDemand": "Group waiting, accepted and cooking units by menu; Belum mulai sums waiting plus accepted, Dimasak shows cooking. Exclude ready, delivered and cancelled units. Sticky desktop/tablet panel; native collapsible Perlu dimasak summary on phones.",
+      "managementMetrics": "Transaksi belum selesai includes paid but operationally unfinished transactions. Pilihan pelanggan counts ordered portions minus cancellations regardless of payment state. Active balances/unfinished counts show current state; order values and payments follow event periods.",
+      "menuImport": "Download Excel template, select .xlsx up to 500 KB and 1,000 menu rows, preview create/update/error counts and row details, then commit the validated file atomically. Show validation/commit errors. Same names update, new names create; historic order prices remain unchanged. Photo import is excluded; upload remains deferred pending Supabase Storage."
+    },
+    "transactionReview": {
+      "mode": "Operate incumbent extension",
+      "reviewerVerdict": "ship",
+      "detectorFindings": [],
+      "validation": "15 tests and production build passed (reported by implementation coordinator).",
+      "screenshots": {
+        "directory": ".impeccable/review",
+        "surfaces": [
+          "transaction-detail",
+          "kitchen-demand",
+          "management-transactions",
+          "menu-import"
+        ],
+        "widths": [
+          360,
+          390,
+          768,
+          1024,
+          1440
+        ],
+        "pattern": "{surface}-{width}.png"
+      }
+    }
+  },
+  "components": [
+    {
+      "css": ".ds-primary{font:600 12px/1.4 Manrope,Arial,sans-serif;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 17px;border:1px solid transparent;border-radius:3px;background:var(--brand,#a43c2d);color:var(--on-brand,#fff9f0);cursor:pointer;transition:background 140ms}.ds-primary:hover:not(:disabled){filter:brightness(.9)}.ds-primary:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:3px}.ds-primary:disabled{opacity:.48;cursor:not-allowed}",
+      "kind": "button",
+      "name": "Primary Button",
+      "refersTo": "button-primary",
+      "html": "<button class=\"ds-primary\">Kirim pesanan</button>",
+      "description": "Main service action with a minimum 44px height."
+    },
+    {
+      "css": ".ds-secondary{font:600 12px/1.4 Manrope,Arial,sans-serif;min-height:44px;padding:10px 17px;border:1px solid var(--line,#dcd5c8);border-radius:3px;background:var(--surface,#faf7f0);color:var(--ink,#2b2923);cursor:pointer;transition:background 140ms}.ds-secondary:hover:not(:disabled){background:#eae4d7;filter:brightness(.97)}.ds-secondary:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:3px}.ds-secondary:disabled{opacity:.48;cursor:not-allowed}",
+      "kind": "button",
+      "name": "Secondary Button",
+      "refersTo": "button-secondary",
+      "html": "<button class=\"ds-secondary\">Masak</button>",
+      "description": "Bordered paper control for secondary actions."
+    },
+    {
+      "css": ".ds-text{display:inline-flex;align-items:center;min-height:44px;background:none;border:0;padding:0;color:var(--brand,#a43c2d);font:600 12px/1.4 Manrope,Arial,sans-serif;cursor:pointer}.ds-text:hover{text-decoration:underline;text-underline-offset:4px}.ds-text:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:3px}",
+      "kind": "button",
+      "name": "Text Action",
+      "refersTo": "button-text",
+      "html": "<button class=\"ds-text\">Lihat semua</button>",
+      "description": "Quiet accent action used alongside ledger or detail content."
+    },
+    {
+      "css": ".ds-field{display:block;color:var(--ink,#2b2923);font-family:Manrope,Arial,sans-serif}.ds-field>span{display:block;font-size:11px;font-weight:600;margin-bottom:8px}.ds-field input{display:block;width:100%;min-height:46px;padding:11px 12px;border:1px solid #cfc5b5;border-radius:2px;background:var(--surface,#faf7f0);color:var(--ink,#2b2923);font:13px Manrope,Arial,sans-serif;caret-color:var(--brand,#a43c2d)}.ds-field input::placeholder{color:#6b6356;opacity:1}.ds-field input:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:3px}",
+      "kind": "input",
+      "name": "Named Field",
+      "refersTo": "field",
+      "html": "<label class=\"ds-field\"><span>Nama Anda</span><input placeholder=\"Nama panggilan + pembeda\" /></label>",
+      "description": "Visible label and full-opacity placeholder on fresh paper."
+    },
+    {
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:5px;padding:12px;background:#eee9df;font-family:Manrope,Arial,sans-serif}.ds-nav button{text-align:left;padding:12px 11px;min-height:46px;border:0;border-radius:3px;background:none;color:#6e675d;font:12px Manrope,Arial,sans-serif;cursor:pointer}.ds-nav button.ds-nav-active{color:var(--brand,#a43c2d);background:#e5ddd0;font-weight:700}.ds-nav button:hover{background:#e7e0d4}.ds-nav button:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:3px}",
+      "kind": "nav",
+      "name": "Management Navigation",
+      "refersTo": "navigation-active",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Modul Manajemen\"><button class=\"ds-nav-active\">Ringkasan bisnis</button><button>Arsip transaksi</button><button>Katalog menu</button><button>Pengaturan</button></nav>",
+      "description": "Management-only report sidebar; kitchen and waiter use horizontal workspace tabs."
+    },
+    {
+      "name": "Service Workspace Tabs",
+      "kind": "nav",
+      "description": "Horizontal waiter workflow with a ready-unit counter; kitchen uses the same treatment for queue and availability.",
+      "html": "<nav class=\"ds-workspace-tabs\" aria-label=\"Modul Garson\"><button class=\"ds-selected\">Pelanggan &amp; Order</button><button>Siap Diantar <b>3</b></button><button>Ketersediaan</button></nav>",
+      "css": ".ds-workspace-tabs{display:flex;gap:28px;overflow-x:auto;border-bottom:1px solid var(--line,#dcd5c8)}.ds-workspace-tabs button{display:flex;align-items:center;gap:9px;min-height:57px;padding:10px 0;white-space:nowrap;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted,#686256);font:12px Manrope,Arial,sans-serif;cursor:pointer}.ds-workspace-tabs button.ds-selected{color:var(--ink,#2b2923);font-weight:650;border-bottom-color:var(--brand,#a43c2d)}.ds-workspace-tabs button:hover{background:var(--inset,#ece7dc)}.ds-workspace-tabs button:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:-3px}.ds-workspace-tabs b{font-size:11px;border:1px solid var(--line,#dcd5c8);padding:0 5px;min-width:20px}@media(max-width:767px){.ds-workspace-tabs{gap:20px}.ds-workspace-tabs button{min-height:55px;font-size:11px}}"
+    },
+    {
+      "kind": "custom",
+      "html": "<span class=\"ds-status\"><span></span>Siap diantar</span>",
+      "name": "Service Status",
+      "description": "Noninteractive explicit status text with a colored dot.",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:6px;color:#3d614a;font:11px Manrope,Arial,sans-serif}.ds-status>span{width:5px;height:5px;border-radius:50%;background:#4d7157}"
+    },
+    {
+      "css": ".ds-ticket{padding:22px;border:1px solid var(--line,#dcd5c8);background:var(--surface,#faf7f0);color:var(--ink,#2b2923);font-family:Manrope,Arial,sans-serif}.ds-ticket h2{margin:0;font:650 24px/1.12 Manrope,Arial,sans-serif;overflow-wrap:anywhere}.ds-ticket>small{display:block;margin-top:7px;font-size:10px;color:var(--muted,#686256);padding-bottom:17px;border-bottom:1px solid var(--line,#dcd5c8)}.ds-ticket-unit{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 0;border-bottom:1px solid var(--line,#dcd5c8)}.ds-ticket-unit strong{font-size:12px}.ds-ticket-unit span{display:block;font-size:11px;color:#966327;margin-top:5px}.ds-ticket button{min-height:44px;padding:9px 11px;border:1px solid transparent;border-radius:3px;background:var(--brand,#a43c2d);color:var(--on-brand,#fff9f0);font:600 12px/1.4 Manrope,Arial,sans-serif;cursor:pointer}.ds-ticket button:hover{filter:brightness(.9)}.ds-ticket button:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:3px}",
+      "kind": "card",
+      "name": "Kitchen Ticket",
+      "refersTo": "kitchen-ticket",
+      "html": "<section class=\"ds-ticket\"><h2>Nadia</h2><small>Order #A104</small><div class=\"ds-ticket-unit\"><div><strong>1 × Hidangan utama</strong><span>Dimasak</span></div><button>Siap</button></div></section>",
+      "description": "Production ticket with Manrope customer heading, separate unit status, and preparation action."
+    },
+    {
+      "kind": "nav",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab-selected\">Semua</button><button>Hidangan utama</button><button>Minuman</button></div>",
+      "name": "Category Tabs",
+      "description": "Scrollable underlined menu categories; counts remain noninteractive badges.",
+      "css": ".ds-tabs{display:flex;gap:22px;border-bottom:1px solid var(--line,#dcd5c8);overflow-x:auto}.ds-tabs button{min-height:46px;padding:12px 0;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;color:var(--muted,#686256);font:11px Manrope,Arial,sans-serif;white-space:nowrap;cursor:pointer}.ds-tabs button.ds-tab-selected{color:var(--ink,#2b2923);border-bottom-color:var(--brand,#a43c2d);font-weight:700}.ds-tabs button:hover{filter:brightness(.97)}.ds-tabs button:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:3px}"
+    },
+    {
+      "name": "Transaction Customer Picker",
+      "kind": "input",
+      "description": "Active-transaction combobox; new transaction is offered only when no active name matches. Keyboard selection supports arrows, Enter and Escape.",
+      "html": "<label class=\"ds-customer\"><span>Nama pelanggan</span><input role=\"combobox\" aria-expanded=\"true\" aria-controls=\"ds-customers\" value=\"Nadia\" /></label><div class=\"ds-customers\" id=\"ds-customers\" role=\"listbox\"><button role=\"option\" aria-selected=\"true\"><strong>Nadia</strong><small>Transaksi aktif</small></button></div>",
+      "css": ".ds-customer{display:block;font:600 11px Manrope,Arial,sans-serif;color:var(--ink,#2b2923)}.ds-customer>span{display:block;margin-bottom:8px}.ds-customer input{width:100%;min-height:46px;padding:11px 12px;border:1px solid #cfc5b5;background:var(--surface,#faf7f0);color:var(--ink,#2b2923);font:13px Manrope,Arial,sans-serif}.ds-customer input:focus-visible,.ds-customers button:focus-visible{outline:2px solid var(--brand,#a43c2d);outline-offset:2px}.ds-customers{max-height:245px;overflow:auto;border:1px solid var(--line,#dcd5c8);background:var(--surface,#faf7f0);padding:0 12px}.ds-customers button{width:100%;min-height:62px;padding:12px 3px;text-align:left;border:0;border-bottom:1px solid var(--line,#dcd5c8);background:none;color:var(--ink,#2b2923);cursor:pointer;font:12px Manrope,Arial,sans-serif}.ds-customers button[aria-selected=true],.ds-customers button:hover{background:#eae2d2}.ds-customers small{display:block;margin-top:3px;font-size:10px;color:var(--muted,#686256)}"
+    },
+    {
+      "name": "Kitchen Demand Summary",
+      "kind": "custom",
+      "description": "Informational aggregate beside production tickets; phones replace it with a native collapsible summary above the queue.",
+      "html": "<aside class=\"ds-demand\"><h2>Ringkasan masakan <span>7</span></h2><p>Termasuk yang menunggu diterima. Tidak termasuk siap, diantar, atau dibatalkan.</p><div class=\"ds-demand-row\"><strong>Nasi goreng<small>7 porsi perlu disiapkan</small></strong><b>4</b><b>3</b></div></aside>",
+      "css": ".ds-demand{padding:20px;background:var(--inset,#ece7dc);border:1px solid var(--line,#dcd5c8);font-family:Manrope,Arial,sans-serif;color:var(--ink,#2b2923)}.ds-demand h2{display:flex;justify-content:space-between;gap:10px;margin:0;font:650 18px Manrope,Arial,sans-serif}.ds-demand h2 span{font-size:25px}.ds-demand p{font-size:11px;line-height:1.7;color:var(--muted,#686256);margin:13px 0 18px}.ds-demand-row{display:grid;grid-template-columns:minmax(0,1fr) 62px 50px;gap:8px;align-items:center;border-bottom:1px solid var(--line,#dcd5c8);padding:15px 0;font-size:12px}.ds-demand-row strong{overflow-wrap:anywhere}.ds-demand-row small{display:block;font-size:10px;font-weight:450;margin-top:5px;color:var(--muted,#686256)}.ds-demand-row b{text-align:right;font-size:16px;font-weight:600}"
+    },
+    {
+      "name": "Excel Import Preview",
+      "kind": "custom",
+      "description": "Local scrolling preview with sticky headings, row-level changes and explicit errors before a validated atomic commit.",
+      "html": "<div class=\"ds-import\"><table><thead><tr><th>Baris</th><th>Nama menu</th><th>Harga</th><th>Tersedia</th><th>Perubahan</th></tr></thead><tbody><tr><td>2</td><td>Nasi goreng</td><td>Rp25.000</td><td>Ya</td><td>Tambah</td></tr></tbody></table></div><p class=\"ds-import-note\">Foto tidak diimpor dari Excel. Upload foto menu akan diaktifkan setelah Supabase Storage terhubung.</p>",
+      "css": ".ds-import{max-height:300px;overflow:auto;border:1px solid var(--line,#dcd5c8);margin-bottom:18px;color:var(--ink,#2b2923)}.ds-import table{border-collapse:collapse;width:100%;min-width:530px;font:11px Manrope,Arial,sans-serif}.ds-import th,.ds-import td{text-align:left;padding:12px;border-bottom:1px solid var(--line,#dcd5c8)}.ds-import th{position:sticky;top:0;background:var(--inset,#ece7dc);font-weight:600}.ds-import td:nth-child(3),.ds-import th:nth-child(3){text-align:right;white-space:nowrap}.ds-import-note{font:12px/1.7 Manrope,Arial,sans-serif;color:var(--muted,#686256);margin:18px 0}"
+    }
+  ],
+  "narrative": {
+    "overview": "The restaurant's menu book supplies the material language: ivory paper, charcoal ink, fine warm rules, expressive serif headings, and restrained brick red. Three distinct staff workspaces apply that language to their tasks: a full-width kitchen production board, a horizontal waiter service workflow, and a management report sidebar. A shared role chooser introduces these spaces after login. The customer portal opens it into a photographic menu with more generous editorial headings.\n\nThis is a source-first record of the implemented Operate-mode app, extracted from `PRODUCT.md`, `src/styles.css`, `src/StaffWorkspaces.jsx`, `src/main.jsx`, `src/TransactionPanels.jsx`, `src/ManagementOverview.jsx`, `src/CreateOrder.jsx`, and `src/MenuImport.jsx`. The transaction, kitchen-demand, reporting, and Excel-import extension continues this incumbent world. The PRD's menu-book direction informs the world; no approved image composition is claimed. The frontmatter records the default implementation tokens. Restaurant settings can override primary and secondary CSS variables at runtime, so those two values are defaults rather than immutable restaurant identity colors.",
+    "northStar": "The Ivory Menu Book",
+    "keyCharacteristics": [
+      "Ivory surfaces and thin warm dividers.",
+      "Newsreader editorial headings paired with Manrope controls, supporting copy, and kitchen production headings.",
+      "Restrained brick-red actions and explicit service status labels.",
+      "Compact staff workflows and a photographic customer menu."
+    ],
+    "donts": [
+      "**Don't** turn every ledger row into a floating card or spread the mobile cart shadow to ordinary panels.",
+      "**Don't** use accent color as a replacement for readable labels or status text.",
+      "**Don't** present sample photography as confirmed restaurant catalogue assets.",
+      "**Don't** erase wrapping, horizontal tab scrolling, or mobile cart access when extending the layout."
+    ],
+    "dos": [
+      "**Do** keep ivory paper, charcoal ink, and warm rules as the main reading structure.",
+      "**Do** preserve the Newsreader and Manrope role split.",
+      "**Do** pair service colors with explicit Indonesian labels.",
+      "**Do** preserve the implemented 44px action targets and visible keyboard focus.",
+      "**Do** keep example catalogue photography clearly disclosed and provide the existing text fallback.",
+      "**Do** preserve the three distinct workspace compositions and keep session workspace selection separate from staff identity."
+    ],
+    "rules": [
+      {
+        "section": "colors",
+        "name": "The Restrained Accent Rule",
+        "body": "Use the primary accent for action, focus, and selection; retain paper and ink for the main reading surface."
+      },
+      {
+        "section": "typography",
+        "name": "The Two Voices Rule",
+        "body": "Keep editorial headings and emphasized totals in Newsreader; use Manrope for controls, status, operational detail, and kitchen production headings."
+      }
+    ]
+  }
+}
