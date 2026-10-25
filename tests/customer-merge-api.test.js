@@ -36,19 +36,19 @@ test('HTTP: merging removes duplicates and synchronizes both portals without exp
     assert.equal(state.tabs.length, 1); assert.equal(state.orders.length, 2);
     for (const guest of [first, second]) {
       state = (await guest('state')).data;
-      assert.equal(state.tabs.length, 1); assert.equal(state.tabs[0].id, b.data.tabId);
+      assert.equal(state.tabs.length, 0); assert.equal(state.portalSession.tabId, b.data.tabId);
       assert.equal(state.portalSession.key, guest === first ? a.data.tabId : b.data.tabId);
-      assert.equal(state.tabs[0].name, 'Rizka portal'); assert.equal(state.tabs[0].token, undefined);
-      assert.equal(state.orders.length, 2); assert.ok(state.orders.every(order => order.token === undefined));
+      assert.equal(state.portalSession.name, 'Rizka portal');
+      assert.equal(state.orders.length, 0);
     }
     state = (await stranger('state')).data; assert.equal(state.orders.length, 0); assert.equal(state.tabs.length, 0);
     const next = await first('orders', order('Ignored old name', a.data.tabId)); assert.equal(next.data.tabId, b.data.tabId);
     await staff('action', { action: 'rename', tabId: b.data.tabId, name: 'Rizka' });
-    state = (await second('state')).data; assert.equal(state.tabs[0].name, 'Rizka'); assert.equal(state.orders.length, 3);
+    state = (await second('state')).data; assert.equal(state.portalSession.name, 'Rizka'); assert.equal(state.orders.length, 0); state = (await staff('state')).data; assert.equal(state.orders.length,3);
     const beforeDue = state.orders.flatMap(order => order.units).reduce((sum, unit) => sum + (!unit.paid ? unit.price : 0), 0);
     assert.equal(beforeDue, 300);
     assert.equal((await staff('action', { action: 'pay', orderId: a.data.orderId, methodId: 'method-0' })).status, 200);
-    state = (await first('state')).data;
+    state = (await staff('state')).data;
     assert.equal(state.orders.flatMap(order => order.units).filter(unit => !unit.paid).length, 2);
     // Paying in full does not end a session while delivery is unfinished.
     const orderIds = state.orders.map(order => order.id);
@@ -56,7 +56,6 @@ test('HTTP: merging removes duplicates and synchronizes both portals without exp
     assert.equal((await first('state')).data.portalSession.status, 'active');
     await staff('workspace', { role: 'kitchen' });
     for (const orderId of orderIds) {
-      assert.equal((await staff('action', { action: 'accept', orderId })).status, 200);
       assert.equal((await staff('action', { action: 'ready', orderId })).status, 200);
     }
     await staff('workspace', { role: 'waiter' });
@@ -75,12 +74,11 @@ test('HTTP: merging removes duplicates and synchronizes both portals without exp
     assert.equal((await first('orders', originalRequest)).status, 409);
     assert.equal((await first('orders', order('Old tab', b.data.tabId))).status, 409);
     state = (await first('state')).data;
-    assert.equal(state.tabs.length, 1); assert.equal(state.orders.length, 1);
-    assert.equal(state.tabs[0].name, 'New session');
+    assert.equal(state.tabs.length, 0); assert.equal(state.orders.length, 0);
+    assert.equal(state.portalSession.name, 'New session');
     assert.equal((await second('state')).data.portalSession.status, 'closed');
     // The other ordering works too: delivered first, final payment closes it.
     await staff('workspace', { role: 'kitchen' });
-    await staff('action', { action: 'accept', orderId: fresh.data.orderId });
     await staff('action', { action: 'ready', orderId: fresh.data.orderId });
     await staff('workspace', { role: 'waiter' });
     await staff('action', { action: 'deliver', orderId: fresh.data.orderId });

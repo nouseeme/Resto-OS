@@ -4,8 +4,8 @@ process.loadEnvFile('.env');
 const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_PUBLISHABLE_KEY;
 if(!url||!key)throw new Error('Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY for the target test project.');
 const client=createClient(url,key,{auth:{persistSession:false}});
-for(const rpc of ['resto_snapshot','resto_commit']){
- const {error}=await client.rpc(rpc,rpc==='resto_commit'?{expected_version:0,changes:{}}:undefined);
+for(const [rpc,args] of [['resto_snapshot',undefined],['resto_commit',{expected_version:0,changes:{}}],['resto_context',{session_key:null}],['resto_view',{read_scope:'manager'}]]){
+ const {error}=await client.rpc(rpc,args);
  assert.ok(error,`Anonymous ${rpc} must be rejected`);assert.ok(['42501','PGRST202'].includes(error.code),`Unexpected error code ${error.code}`);
  console.log(`PASS anonymous ${rpc} is denied`);
 }
