@@ -38,8 +38,8 @@ export default function Customers({ data, select, act, disabled, Button, Empty }
       <p>{chosen.map(row => row.tab.name).join(' · ')}</p>
       {!review ? <Button disabled={disabled || chosen.length < 2 || chosen.length > 50} onClick={() => { setTarget(targetId); setReview(true); }}><Merge size={16}/>Gabungkan pelanggan</Button> : <>
         <fieldset disabled={disabled} className="customer-merge-target"><legend>Pilih nama pelanggan utama</legend>{chosen.map(row => <label key={row.tab.id}><input type="radio" name="merge-target" value={row.tab.id} checked={targetId === row.tab.id} onChange={() => setTarget(row.tab.id)}/><span><strong>{row.tab.name}</strong><small>{row.orders.length} order · Sisa {money(row.totalDue)}</small></span></label>)}</fieldset>
-        <p>Seluruh order, pembayaran, dan sisa tagihan digabung ke <strong>{chosen.find(row => row.tab.id === targetId)?.tab.name}</strong>. Tiap order tetap terpisah. Semua portal terkait mengikuti nama dan tagihan gabungan saat data diperbarui.</p>
-        <p className="fine-print">Pastikan pilihan ini milik orang yang sama. Penggabungan membuka seluruh tagihan gabungan di setiap portal terkait dan belum dapat dibatalkan.</p>
+        <p>Seluruh order, pembayaran, dan sisa tagihan digabung ke <strong>{chosen.find(row => row.tab.id === targetId)?.tab.name}</strong>. Tiap order tetap terpisah. Pesanan tambahan dari portal terkait tetap masuk ke pelanggan utama.</p>
+        <p className="fine-print">Pastikan pilihan ini milik orang yang sama. Penggabungan menghubungkan pesanan dari seluruh portal terkait dan belum dapat dibatalkan.</p>
         <div className="actions"><Button kind="primary" disabled={disabled || chosen.length < 2} onClick={merge}>Gabungkan {chosen.length} pelanggan</Button><Button disabled={disabled} onClick={() => setReview(false)}>Kembali</Button></div>
       </>}
     </div>}

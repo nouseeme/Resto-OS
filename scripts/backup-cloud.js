@@ -7,7 +7,7 @@ const stamp=new Date().toISOString().replace(/[:.]/g,'-');
 const directory=`data/backups/${stamp}`;
 await mkdir(`${directory}/images`,{recursive:true});
 const images=[];
-for(const [index,url] of [...new Set(snapshot.menu.map(m=>m.photo).filter(url=>url?.startsWith(`${process.env.SUPABASE_URL}/storage/`)))].entries()) {
+for(const [index,url] of [...new Set([snapshot.settings.logo,...snapshot.menu.map(m=>m.photo)].filter(url=>url?.startsWith(`${process.env.SUPABASE_URL}/storage/`)))].entries()) {
   const response=await fetch(url);if(!response.ok)throw new Error('Cannot back up a menu image');
   const buffer=Buffer.from(await response.arrayBuffer()),file=`images/${index}.webp`;
   await writeFile(`${directory}/${file}`,buffer);images.push({url,file,sha256:createHash('sha256').update(buffer).digest('hex')});

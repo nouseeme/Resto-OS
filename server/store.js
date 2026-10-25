@@ -21,7 +21,7 @@ export const assert = (condition, message, code) => { if (!condition) fail(messa
 
 export function initialState() {
   return {
-    settings: { name: 'Restoran Anda', tagline: '', primary: '#a43c2d', accent: '#405644', logo: '', paused: false, autoAcceptSeconds: 15, currency: 'IDR' },
+    settings: { name: 'Restoran Anda', tagline: '', primary: '#a43c2d', accent: '#405644', logo: '', paused: false, autoAcceptSeconds: 0, currency: 'IDR' },
     menu: [],
     tabs: [], orders: [], payments: [], expenses: [], audit: [], bans: {}, requests: {}, users: [], sessions: []
   };
@@ -81,7 +81,7 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
     assert(Number.isInteger(i.qty) && i.qty > 0 && i.qty <= 30, 'Jumlah menu harus 1–30.');
     totalUnits += i.qty;
     assert(totalUnits <= 100, 'Maksimal 100 porsi per kiriman.');
-    return Array.from({ length: i.qty }, () => ({ id: id(), menuId: m.id, name: m.name, category: m.category, price: m.price, note: String(i.note ?? '').slice(0, 200), status: 'waiting', paid: false }));
+    return Array.from({ length: i.qty }, () => ({ id: id(), menuId: m.id, name: m.name, category: m.category, price: m.price, note: String(i.note ?? '').slice(0, 200), status: 'accepted', paid: false }));
   });
   let tab = actor && body.tabId ? s.tabs.find(t => t.id === body.tabId && !t.closedAt) : !actor ? guestTab(s.tabs, token) : null;
   if (tab?.closedAt) tab = null;
@@ -94,7 +94,7 @@ export function placeOrder(s, body, actor, token, time = Date.now()) {
     s.tabs.push(tab);
   }
   const slugName = tab.name.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-');
-  const order = { id: id(), tabId: tab.id, slug: `${slugName}-${tab.id.slice(0, 8)}-${tabOrders(s, tab.id).length + 1}`, createdAt: new Date(time).toISOString(), autoAcceptAt: new Date(time + s.settings.autoAcceptSeconds * 1000).toISOString(), token: actor ? null : token, source: actor ? 'Garson' : 'Portal', status: 'waiting', units };
+  const order = { id: id(), tabId: tab.id, slug: `${slugName}-${tab.id.slice(0, 8)}-${tabOrders(s, tab.id).length + 1}`, createdAt: new Date(time).toISOString(), acceptedAt: new Date(time).toISOString(), acceptedBy: 'Sistem', token: actor ? null : token, source: actor ? 'Garson' : 'Portal', status: 'accepted', units };
   s.orders.push(order);
   const result = { orderId: order.id, tabId: tab.id };
   s.requests[requestKey] = result; audit(s, actor, 'order_created', order.slug);
@@ -160,7 +160,8 @@ export function operate(s, body, actor) {
     assert(normalize(body.name).length >= 2 && normalize(body.name).length <= 60, 'Nama restoran harus 2–60 karakter.');
     assert(/^#[0-9a-f]{6}$/i.test(body.primary) && /^#[0-9a-f]{6}$/i.test(body.accent), 'Warna tidak valid.');
     assert(readableBrand(body.primary) && readableBrand(body.accent), 'Pilih warna utama dan aksen yang lebih gelap agar teks tetap terbaca (kontras minimal 4,5:1).');
-    const validLogo = !body.logo || /^data:image\/(png|jpeg|webp);base64,[a-zA-Z0-9+/=]+$/.test(body.logo);
+    const logoPrefix = process.env.SUPABASE_URL ? `${process.env.SUPABASE_URL}/storage/v1/object/public/menu-images/branding/` : null;
+    const validLogo = !body.logo || /^data:image\/(png|jpeg|webp);base64,[a-zA-Z0-9+/=]+$/.test(body.logo) || (logoPrefix && body.logo.startsWith(logoPrefix) && !body.logo.includes('..'));
     assert(validLogo && (body.logo?.length ?? 0) < 700000, 'Logo harus PNG, JPG, atau WebP di bawah 500 KB.');
     Object.assign(s.settings, { currency, name: normalize(body.name), tagline: String(body.tagline ?? '').slice(0, 120), primary: body.primary, accent: body.accent, logo: body.logo ?? '' });
   } else {
@@ -199,11 +200,24 @@ export function openStore(filename) {
   const db = new DatabaseSync(filename);
   db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS app (id INTEGER PRIMARY KEY CHECK(id=1), body TEXT NOT NULL)');
   if (!db.prepare('SELECT id FROM app').get()) db.prepare('INSERT INTO app VALUES (1,?)').run(JSON.stringify(initialState()));
+  const existing=JSON.parse(db.prepare('SELECT body FROM app WHERE id=1').get().body);
+  if(existing.settings.autoAcceptSeconds!==0 || existing.orders.some(o=>o.status==='waiting')){
+    existing.settings.autoAcceptSeconds=0;
+    for(const o of existing.orders){
+      if(o.status==='waiting'){o.status='accepted';o.acceptedAt=now();o.acceptedBy='Sistem';delete o.autoAcceptAt;}
+      for(const u of o.units)if(u.status==='waiting')u.status='accepted';
+    }
+    db.prepare('UPDATE app SET body=? WHERE id=1').run(JSON.stringify(existing));
+  }
+  let version = 0;
+  const listeners = new Set();
   return {
+    get version() { return String(version); },
+    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     read: () => ensureFinance(JSON.parse(db.prepare('SELECT body FROM app WHERE id=1').get().body)),
     transaction(fn) {
       db.exec('BEGIN IMMEDIATE');
-      try { const s = this.read(); const result = fn(s); db.prepare('UPDATE app SET body=? WHERE id=1').run(JSON.stringify(s)); db.exec('COMMIT'); return result; }
+      try { const s = this.read(); const result = fn(s); db.prepare('UPDATE app SET body=? WHERE id=1').run(JSON.stringify(s)); db.exec('COMMIT'); version++; for (const notify of listeners) { try { notify(version); } catch { /* Reconciliation recovers a failed notification. */ } } return result; }
       catch (e) { db.exec('ROLLBACK'); throw e; }
     }, close: () => db.close()
   };
