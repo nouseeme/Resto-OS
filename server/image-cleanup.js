@@ -10,7 +10,8 @@ export function createImageCleanup(store,removeImage){
       const pending=Object.entries((await store.read()).requests).filter(([key])=>key.startsWith(prefix)).slice(0,20);
       for(const [key,{url}] of pending){
         try{
-          if((await store.read()).menu.some(item=>item.photo===url))continue;
+          const state=await store.read();
+          if(state.settings.logo===url || state.menu.some(item=>item.photo===url))continue;
           await removeImage(url);
           await store.transaction(state=>{delete state.requests[key]});
         }catch{ /* Keep durable queue entry for the next authenticated request. */ }

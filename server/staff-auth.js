@@ -20,7 +20,7 @@ export async function authenticateStaff(email, password, client = authClient()) 
   assert(typeof email === 'string' && email.length <= 254 && typeof password === 'string' && password.length > 0 && password.length <= 200, 'Email atau kata sandi salah.', 401);
   const { data, error } = await client.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   assert(!error && isStaff(data?.user), 'Email atau kata sandi salah, atau akun belum dikonfirmasi.', 401);
-  return staffProfile(data.user);
+  return { ...staffProfile(data.user), realtime: { accessToken: data.session.access_token, refreshToken: data.session.refresh_token, expiresAt: data.session.expires_at } };
 }
 
 export function staffProfile(user) {

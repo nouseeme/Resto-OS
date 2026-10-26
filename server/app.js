@@ -1,18 +1,19 @@
 import { demoEnabled, demoStore, demoMiddleware } from './demo.js';
 import { queueImageCleanup, createImageCleanup } from './image-cleanup.js';
 import express from 'express';
-import { authenticateStaff, staffStillAllowed, createStaff } from './staff-auth.js';
+import { authenticateStaff, createStaff } from './staff-auth.js';
+import { readScope, selectReadState, presentState } from './read-model.js';
+import { liveConfig } from './live-config.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, createHash } from 'node:crypto';
 import { openCloudStore } from './cloud-store.js';
 import { prepareMenuImage, removeMenuImage } from './media.js';
-import { openStore, assert, id, now, tick, placeOrder, operate, passwordHash, passwordMatches } from './store.js';
+import { openStore, assert, id, now, placeOrder, operate, passwordHash, passwordMatches } from './store.js';
 import { PORTAL_PATH, STAFF_PATH } from '../shared/routes.js';
 import { WORKSPACE_ROLES } from '../shared/workspaces.js';
 import { parseMenuFile, previewMenuImport, commitMenuImport, menuTemplate } from './menu-import.js';
 import { financeAction } from './finance.js';
-import { guestSession } from '../shared/customer-service.js';
 import { reportWorkbook, reportPeriod } from './reports.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -33,7 +34,7 @@ const cookies = req => Object.fromEntries((req.headers.cookie ?? '').split(';').
 const hash = value => createHash('sha256').update(value).digest('hex');
 const secure = process.env.RESTO_SECURE_COOKIE === '1' || Boolean(process.env.VERCEL);
 const cookieOptions = { httpOnly: true, sameSite: 'strict', secure, path: '/' };
-app.get('/api/health', async(req,res) => { await store.read(); res.set('Cache-Control','no-store').json({ok:true,database:demoEnabled?'demo':cloud?'supabase':'sqlite'}); });
+app.get('/api/health', async(req,res) => { if(cloud)await store.health(); res.set('Cache-Control','no-store').json({ok:true,database:demoEnabled?'demo':cloud?'supabase':'sqlite'}); });
 app.use('/api', async (req, res, next) => {
   res.set('Cache-Control','no-store'); res.set('X-Content-Type-Options', 'nosniff');
   if (req.method !== 'GET') {
@@ -44,9 +45,6 @@ app.use('/api', async (req, res, next) => {
   let token = cookies(req).resto_guest;
   if (!token || !/^[a-f0-9]{64}$/.test(token)) { token = randomBytes(32).toString('hex'); res.cookie('resto_guest', token, { ...cookieOptions, maxAge: 365*86400000 }); }
   req.guest = hash(token);
-  const session = cookies(req).resto_staff;
-  const s = await store.read();
-  req.state = s;
   // Demo sessions belong exclusively to the visitor's browser dataset.
   if (demoEnabled && req.query.portal !== '1') {
     const demoToken=hash('demo-browser-session');
@@ -63,27 +61,37 @@ app.use('/api', async (req, res, next) => {
     req.actor=WORKSPACE_ROLES.includes(req.staffSession.activeRole)?{...req.staff,role:req.staffSession.activeRole}:null;
     return next();
   }
-  let found = session && s.sessions.find(x => x.token === hash(session) && Date.parse(x.expiresAt)>Date.now());
-  if (cloud && found && (!found.authUserId || !await staffStillAllowed(found.authUserId))) found = null;
-  req.staff = found ? s.users.find(u => u.id === found.userId) : null;
+  const session = req.query.portal === '1' ? null : cookies(req).resto_staff;
+  const local = cloud ? null : store.read();
+  const context = cloud ? await store.context(session ? hash(session) : null) : null;
+  const found = cloud ? context.session : session && local.sessions.find(x => x.token === hash(session) && Date.parse(x.expiresAt)>Date.now());
+  req.staff = cloud ? context.staff : found ? local.users.find(u => u.id === found.userId) : null;
   req.staffSession = found;
   req.actor = req.staff && WORKSPACE_ROLES.includes(found.activeRole) ? { ...req.staff, role: found.activeRole } : null;
   if (req.query.portal === '1') { req.actor = null; req.staff = null; req.staffSession = null; }
   next();
 });
 app.get('/api/state', async(req,res) => {
-  const s = req.state;
-  if(req.actor?.role==='manager')await cleanupMenuImages();
+  const scope = readScope(req.actor,req.query.view);
+  const start = scope === 'manager-overview' && req.query.start ? new Date(String(req.query.start)) : null;
+  assert(!start || Number.isFinite(+start),'Periode laporan tidak valid.');
+  const knownVersion = typeof req.query.version === 'string' ? req.query.version : null;
+  const identity = req.staff ? `${req.staff.id}:${req.actor?.role??'choose'}` : 'guest';
+  const suffix = `|${identity}`;
+  const databaseVersion = knownVersion?.endsWith(suffix) ? knownVersion.slice(0,-suffix.length) : null;
+  const selected = cloud ? await store.view({scope,guest:req.guest,knownVersion:databaseVersion,start:start?.toISOString()??null}) : {version:`${store.version}:${scope}:${start?.toISOString()??''}`, ...selectReadState(store.read(),{scope,guest:req.guest,start:start?.toISOString()??null})};
+  const version=selected.version+suffix;
   res.set('X-Resto-Images', cloud ? 'enabled' : 'disabled');
-  const {expenseCategories,paymentMethods,...publicSettings} = s.settings; const features={menuImageUpload:imagesEnabled,staffAuth:cloud?'supabase':'local'};
-  const guest = guestSession(s.tabs, req.guest);
-  const tab = guest?.status === 'active' ? guest.tab : null;
-  const portalSession = guest ? { status: guest.status, key: guest.key, tabId: tab?.id ?? null } : { status: 'new', key: null, tabId: null };
-  if (req.staff && !req.actor) return res.json({ settings: s.settings, features, menu: [], setupRequired: false, actor: {id:req.staff.id,name:req.staff.name,username:req.staff.username,role:null}, roleRequired: true, tabs: [], orders: [], payments: [], audit: [], users: [], serverTime: now() });
-  if (!req.actor) return res.json({ settings: publicSettings, features, portalSession, menu: s.menu, setupRequired: !cloud && !s.users.length, actor: null, tabs: tab ? [{...tab,token:undefined}] : [], orders: tab ? s.orders.filter(o=>o.tabId===tab.id).map(({token,...o})=>({...o, status:undefined,acceptedAt:undefined,acceptedBy:undefined,autoAcceptAt:undefined, units:o.units.map(({status,readyAt,cookingAt,deliveredAt,...u})=>({...u,cancelled:status==='cancelled'}))})) : [], payments: [], ban: s.bans[req.guest] ?? null, serverTime: now() });
-  const { password, ...actor } = req.actor;
-  const role = actor.role;
-  res.json({ settings: role==='manager'?s.settings:{...publicSettings,paymentMethods}, features, menu: s.menu, actor, setupRequired: false, tabs: s.tabs.filter(t=>!t.mergedInto).map(({token,...t})=>({...t, ban: s.bans[token] ?? null})), orders: s.orders.map(({token,...o})=>role==='kitchen' ? {...o,units:o.units.map(({paid,paymentId,price,...u})=>u)} : o), payments: role === 'kitchen' ? [] : s.payments, expenses:role==='manager'?s.expenses:[], audit: role === 'manager' ? s.audit.slice(-200).reverse() : [], users: role==='manager' ? s.users.map(({password,...u})=>u) : [], serverTime: now() });
+  if(selected.unchanged || (knownVersion && version===knownVersion))return res.json({unchanged:true,version,serverTime:now()});
+  res.json({...presentState(selected.state,{actor:req.actor,staff:req.staff,portalSession:selected.portalSession,imagesEnabled,cloud}),version});
+});
+app.get('/api/live-config',async(req,res)=>res.json(demoEnabled?{mode:'demo'}:cloud?await liveConfig(req,store):{mode:'local'}));
+app.get('/api/changes',(req,res)=>{
+  if(cloud || demoEnabled)return res.status(404).end();
+  res.set({'Content-Type':'text/event-stream','Cache-Control':'no-cache'});res.flushHeaders();
+  res.write('event: ready\ndata: {}\n\n');
+  const stop=store.subscribe(()=>res.write('event: changed\ndata: {}\n\n'));
+  req.on('close',stop);
 });
 app.post('/api/login', async(req,res) => {
   const address = hash(req.ip ?? req.socket.remoteAddress ?? 'unknown');
@@ -99,7 +107,8 @@ app.post('/api/login', async(req,res) => {
   if (cloud) user = await authenticateStaff(req.body.email, req.body.password);
   else assert(user && typeof req.body.password==='string' && req.body.password.length<=200 && passwordMatches(req.body.password,user.password), 'Nama pengguna atau kata sandi salah.',401);
   const token=randomBytes(32).toString('hex');
-  await store.transaction(s=>{if(cloud){const existing=s.users.find(u=>u.id===user.id);if(existing)Object.assign(existing,user);else s.users.push(user);}s.sessions=s.sessions.filter(x=>Date.parse(x.expiresAt)>Date.now());s.sessions.push({token:hash(token),userId:user.id,...(cloud?{authUserId:user.id}:{}),activeRole:null,expiresAt:new Date(Date.now()+12*3600000).toISOString()});});
+  const {realtime,...profile}=user;
+  await store.transaction(s=>{if(cloud){const existing=s.users.find(u=>u.id===profile.id);if(existing)Object.assign(existing,profile);else s.users.push(profile);}s.sessions=s.sessions.filter(x=>Date.parse(x.expiresAt)>Date.now());s.sessions.push({token:hash(token),userId:profile.id,...(cloud?{authUserId:profile.id,realtime}:{}),activeRole:null,expiresAt:new Date(Date.now()+12*3600000).toISOString()});});
   res.cookie('resto_staff',token,{...cookieOptions,maxAge:12*3600000}).json({ok:true});
 });
 // Resolve session/workspace again inside every retried transaction.
@@ -175,24 +184,29 @@ app.post('/api/action',async(req,res)=>{
       uploaded=await prepareMenuImage(body.image,body.menuId);body.photo=uploaded;
     } else if(body.removePhoto) body.photo='';
   } else assert(!body.image && !body.removePhoto,'Tindakan foto tidak valid.');
+  if(body.action==='settings' && body.logo?.startsWith('data:') && imagesEnabled){
+    assert(req.actor.role==='manager','Logo hanya dapat diubah dari Manajemen.',403);
+    uploaded=await prepareMenuImage(body.logo,'branding');body.logo=uploaded;
+  }
   delete body.image;delete body.removePhoto;
   try {
     const result=await mutate(req,s=>{
-      oldPhoto=s.menu.find(m=>m.id===body.menuId)?.photo;
+      oldPhoto=body.action==='settings'?s.settings.logo:s.menu.find(m=>m.id===body.menuId)?.photo;
       const result=['financeOption','expense'].includes(body.action)?financeAction(s,body,req.actor):operate(s,body,req.actor);
       if(['menuSave','menuDelete'].includes(body.action) && oldPhoto && !s.menu.some(item=>item.photo===oldPhoto))queueImageCleanup(s,oldPhoto);
+      if(body.action==='settings' && oldPhoto && oldPhoto!==s.settings.logo)queueImageCleanup(s,oldPhoto);
       return result;
     });
-    if(['menuSave','menuDelete'].includes(body.action)){
+    if(['menuSave','menuDelete','settings'].includes(body.action)){
       const pending=await cleanupMenuImages();
-      if(pending)result.warning='Menu tersimpan. Penghapusan gambar dari Storage belum selesai dan akan dicoba lagi otomatis saat Management aktif.';
+      if(pending)result.warning='Perubahan tersimpan. Penghapusan gambar lama akan dicoba lagi saat katalog atau identitas diperbarui.';
     }
     res.json(result);
   } catch(error) {
     // A lost RPC response can occur after commit. Never delete a photo that
     // might already be referenced by the persisted catalog.
     if(uploaded) {
-      try { await store.transaction(s=>{if(!s.menu.some(m=>m.photo===uploaded))queueImageCleanup(s,uploaded)});await cleanupMenuImages(); }
+      try { await store.transaction(s=>{if(s.settings.logo!==uploaded&&!s.menu.some(m=>m.photo===uploaded))queueImageCleanup(s,uploaded)});await cleanupMenuImages(); }
       catch { console.error('Photo cleanup deferred because database state could not be verified.'); }
     }
     throw error;
@@ -200,7 +214,7 @@ app.post('/api/action',async(req,res)=>{
 });
 app.get('/api/menu-template',async(req,res)=>{
   assert(req.actor?.role==='manager','Template katalog hanya tersedia di ruang Manajemen.',403);
-  const file=await menuTemplate(req.state.menu);
+  const file=await menuTemplate(cloud?(await store.view({scope:'manager-menu',guest:req.guest})).state.menu:store.read().menu);
   res.set('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.set('Content-Disposition','attachment; filename="template-menu-restoOS.xlsx"');
   res.send(file);
@@ -208,7 +222,7 @@ app.get('/api/menu-template',async(req,res)=>{
 app.get('/api/reports',async(req,res)=>{
   assert(req.actor?.role==='manager','Laporan hanya tersedia di Manajemen.',403);
   const period=reportPeriod(req.query);
-  const file=await reportWorkbook(req.state,period);
+  const file=await reportWorkbook(await store.read(),period);
   res.set('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.set('Content-Disposition','attachment; filename="laporan-restoOS.xlsx"');
   res.send(file);
@@ -217,7 +231,7 @@ app.post('/api/menu-import/:step',async(req,res)=>{
   assert(req.actor?.role==='manager','Impor katalog hanya tersedia di ruang Manajemen.',403);
   assert(['preview','commit'].includes(req.params.step),'Tindakan impor tidak valid.');
   const parsed=await parseMenuFile(req.body.file);
-  if(req.params.step==='preview')return res.json(previewMenuImport(req.state.menu,parsed));
+  if(req.params.step==='preview')return res.json(previewMenuImport(cloud?(await store.view({scope:'manager-menu',guest:req.guest})).state.menu:store.read().menu,parsed));
   const result=await mutate(req,s=>{
     const session=s.sessions.find(x=>x.token===req.staffSession.token);
     assert(session?.activeRole==='manager','Ruang kerja berubah. Kembali ke Manajemen untuk menyimpan impor.',403);
@@ -227,6 +241,6 @@ app.post('/api/menu-import/:step',async(req,res)=>{
 });
 app.use('/api',async(req,res)=>res.status(404).json({error:'Layanan tidak ditemukan.'}));
 app.use((err,req,res,next)=>{if(!err.status) console.error(err);res.status(err.status??500).json({error:err.status?err.message:'Ada kendala pada server. Coba lagi.'});});
-if (!cloud && !demoEnabled) setInterval(()=>{try{if(store.read().orders.some(o=>o.status==='waiting'&&Date.now()>=Date.parse(o.autoAcceptAt)))store.transaction(s=>tick(s))}catch(e){console.error('Auto-accept gagal',e)}},500).unref();
+
 
 export default app;

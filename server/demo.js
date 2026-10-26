@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createDemoState } from './demo-seed.js';
 import { tick, assert } from './store.js';
@@ -5,6 +6,10 @@ import { tick, assert } from './store.js';
 export { demoEnabled } from './demo-mode.js';
 const context = new AsyncLocalStorage();
 export const demoStore = {
+  get version() {
+    const {sessions,...data}=context.getStore().state;
+    return createHash('sha256').update(JSON.stringify(data)).digest('hex');
+  },
   read() { return structuredClone(context.getStore().state); },
   transaction(fn) {
     const current=context.getStore(), next=structuredClone(current.state);

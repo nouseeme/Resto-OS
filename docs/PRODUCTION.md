@@ -10,7 +10,7 @@ Application pages are `/portal` and `/ruang-staf`; `/` redirects to the portal. 
 
 ## Supabase configuration
 
-Apply the versioned SQL files in `supabase/migrations` to a dedicated project. Configure server environment variables `SUPABASE_URL` (project endpoint) and `SUPABASE_SECRET_KEY` (server-only credential).
+Apply the versioned SQL files in `supabase/migrations` to a dedicated project. Configure server environment variables `SUPABASE_URL` (project endpoint) and `SUPABASE_SECRET_KEY` (server-only credential), plus `SUPABASE_PUBLISHABLE_KEY` for browser Realtime subscriptions.
 
 The management-finance migration adds the private `expenses` table, extends both snapshot/commit RPCs and seeds editable category/method lists in restaurant settings. Apply it before deploying the finance application changes. Expenses use the existing revision lock, RLS and server-only grants. Previous application versions ignore the new table without deleting its rows. SQLite snapshots acquire finance defaults on read and persist them on their next write.
 
@@ -28,7 +28,7 @@ Local SQLite initialization is separate: without cloud credentials, first-run ad
 
 This Supabase project is dedicated to staff identities; every confirmed, unbanned Auth account can sign in and select Manajemen, Dapur, or Garson. Disable public signups in Supabase Auth settings; customers use the public portal without accounts. No public signup endpoint is provided by the application.
 
-Cloud sessions last 12 hours and use opaque HttpOnly cookies. Every authenticated request checks the current Supabase user: deletion or bans revoke access on the next request. Old internal-password sessions are rejected in cloud mode. Existing local accounts must be recreated in Supabase Auth; password hashes are not migrated. SQLite keeps its username/password flow.
+Cloud sessions last 12 hours and use opaque HttpOnly cookies. Every authenticated request uses the server-only session context helper to check the current Supabase user: deletion or bans revoke access on the next request. Old internal-password sessions are rejected in cloud mode. Existing local accounts must be recreated in Supabase Auth; password hashes are not migrated. SQLite keeps its username/password flow.
 
 Ban or delete accounts through Supabase to revoke access. Accounts created directly in Supabase appear in the app after first login; accounts created in Management appear immediately.
 
@@ -38,15 +38,15 @@ Application data lives in the unexposed `resto_private` schema. Menu, customer t
 
 `resto_snapshot` and `resto_commit` use SECURITY INVOKER. Only the server's service role can execute them. Private tables have RLS enabled without browser policies. No-policy notices represent intentional default denial, not a reason to grant browser access.
 
-Writes commit changed rows against the revision they read. Conflicts retry against fresh state. Cron shares the revision lock, and session/workspace checks repeat during retries. Reads reconstruct the complete backend snapshot; profile capacity before increasing traffic or retaining large histories.
+Writes commit changed rows against the revision they read. Conflicts retry against fresh state. Cron shares the revision lock, and session/workspace checks repeat during retries. Read RPCs select only the current workspace/page data, and return a small unchanged response when its version matches. Full snapshots remain confined to domain writes, explicit exports and backups.
 
 ## Scheduled work and Storage
 
-- Auto-accept checks due orders every second in PostgreSQL. Browser refresh adds display latency after the 15-second eligibility deadline.
-- Cron logs older than one hour are removed every ten minutes.
+- Orders and portions are accepted atomically when written; no acceptance timer or per-second cron remains. Compatibility triggers also protect older clients.
+- Cron history older than one day is removed hourly.
 - Expired sessions and stale login attempts are cleaned hourly.
-- Staff tabs poll after each response plus five seconds; customer tabs use fifteen seconds. Hidden tabs stop polling.
-- `menu-images` contains public menu photographs, with writes restricted to the server. Never upload private documents there.
+- Realtime broadcasts contain revision numbers only. The public catalog channel is readable anonymously; staff events require a Supabase user token. Client publishing is denied. Successful subscriptions reconcile missed changes. Visible screens check their version every 60 seconds as a safety net, or every 15 seconds while Realtime is unavailable; hidden/offline screens do not fetch. Sessions predating this rollout use the lightweight fallback until the next login.
+- `menu-images` contains public menu photographs and branding, with writes restricted to the server. Never upload private documents there.
 
 Photo uploads are validated and converted to WebP, capped at 1280px. Saving a menu commits its image reference. Replacing/removing images cleans app-managed objects; database-only backups do not include Storage files.
 
@@ -76,10 +76,18 @@ Confirm the linked owner, project, and environment before publishing. A local up
 
 ## Backup and recovery
 
-`npm run backup` exports application state and referenced menu images to `data/backups`, including image checksums. Backups contain private information such as local password hashes and sessions. Secure them and keep an off-device copy. The helper is manual, not a scheduler or managed backup service. Supabase Auth identities are managed separately and are not recreated by restoring the application snapshot.
+`npm run backup` exports application state and referenced menu/branding images to `data/backups`, including image checksums. Backups contain private information such as local password hashes and sessions. Secure them and keep an off-device copy. The helper is manual, not a scheduler or managed backup service. Supabase Auth identities are managed separately and are not recreated by restoring the application snapshot.
 
 Recover into a separately prepared empty environment. Verify snapshot format and image checksums, restore images, update URLs if necessary, and omit old sessions. Verify financial totals and access boundaries before switching configuration. Destructive production recovery is not automated.
 
 ## Reset
 
 `scripts/reset-cloud.js --confirm-total-reset` deletes restaurant data, catalog images, application profiles, and sessions, restoring empty settings. It requires explicit owner authorization and matching private target configuration. Supabase Auth accounts must be managed separately; authorized accounts can sign in again after a reset.
+
+## Optimized-read verification
+
+Apply the optimized-read and private-context migrations before deploying this application. Keep the original RPCs for compatibility and rollback. `session_context` is the only SECURITY DEFINER helper and lives in the unexposed schema, with execute restricted to the server role; direct Auth table access remains denied. Notification failures cannot roll back business writes.
+
+The portal returns catalog and minimal visit identity only: no order history, balances, payments or kitchen state. Ownership, merge redirects, idempotent retries, price/availability checks and closed-session rejection are still enforced in the write transaction. Dapur receives actionable orders without payment fields; Garson retains all active transactions, including old debts and paid-but-undelivered orders. Management overview preserves all-time active debt while sales use order dates and receipts use payment dates. Finance and archive data are loaded only when those pages are opened; audit reads are bounded to 200 events.
+
+Run `npm test`, `npm run build`, and `node scripts/verify-realtime.mjs`. The notification check sends only a random probe, never an order or financial record. `scripts/migrate-branding.js` safely moves a legacy embedded logo to Storage and verifies its persisted reference. `npm run test:security` checks that the browser cannot execute privileged RPCs.

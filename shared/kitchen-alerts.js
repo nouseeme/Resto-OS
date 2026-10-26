@@ -3,5 +3,5 @@
 export function kitchenArrivals(orders, seen) {
   return orders.filter(order => seen
     ? !seen.has(order.id) && order.units.some(unit => ['waiting', 'accepted', 'cooking'].includes(unit.status))
-    : order.status === 'waiting').map(order => order.id);
+    : order.units.some(unit => ['waiting', 'accepted'].includes(unit.status))).map(order => order.id);
 }

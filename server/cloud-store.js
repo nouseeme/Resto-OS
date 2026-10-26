@@ -18,9 +18,9 @@ export function decodeState(rows) {
   const s = { settings: rows.settings[0] ? { ...rows.settings[0] } : null };
   if (s.settings) delete s.settings.id;
   for (const name of arrays) s[name] = rows[name] ?? [];
-  s.orders = rows.orders.map(o => ({ ...o, units: rows.portions.filter(u => u.orderId === o.id).map(({ orderId, ...u }) => u) }));
-  s.sessions = rows.sessions.map(({ id, ...x }) => x);
-  for (const [table, target] of [['bans','bans'],['requests','requests'],['login_attempts','loginAttempts']]) s[target] = Object.fromEntries(rows[table].map(x => [x.id,x.value]));
+  s.orders = (rows.orders ?? []).map(o => ({ ...o, units: (rows.portions ?? []).filter(u => u.orderId === o.id).map(({ orderId, ...u }) => u) }));
+  s.sessions = (rows.sessions ?? []).map(({ id, ...x }) => x);
+  for (const [table, target] of [['bans','bans'],['requests','requests'],['login_attempts','loginAttempts']]) s[target] = Object.fromEntries((rows[table] ?? []).map(x => [x.id,x.value]));
   return ensureFinance(s);
 }
 export function stateChanges(before, after) {
@@ -45,6 +45,20 @@ export function openCloudStore(client = supabase()) {
     return data;
   }
   return {
+    async context(sessionKey) {
+      const { data, error } = await client.rpc('resto_context', { session_key: sessionKey });
+      if (error) throw error;
+      return data;
+    },
+    async view({ scope, guest, knownVersion = null, start = null }) {
+      const { data, error } = await client.rpc('resto_view', { read_scope: scope, guest_key: guest, known_version: knownVersion, period_start: start });
+      if (error) throw error;
+      return data.unchanged ? data : { ...data, state: decodeState(data.rows) };
+    },
+    async health() {
+      const { error } = await client.rpc('resto_context', { session_key: null });
+      if (error) throw error;
+    },
     async read() { return decodeState((await snapshot()).rows); },
     async transaction(fn) {
       // Retry the domain operation against fresh state, never replay stale writes.
