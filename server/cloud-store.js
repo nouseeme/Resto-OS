@@ -1,3 +1,4 @@
+import { assertLiveAccess } from './demo-mode.js';
 import { supabase } from './supabase.js';
 import { ensureFinance } from '../shared/finance.js';
 
@@ -37,6 +38,7 @@ export function stateChanges(before, after) {
   return changes;
 }
 export function openCloudStore(client = supabase()) {
+  assertLiveAccess();
   async function snapshot() {
     const { data, error } = await client.rpc('resto_snapshot');
     if (error) throw error;

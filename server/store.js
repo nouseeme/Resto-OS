@@ -1,3 +1,4 @@
+import { assertLiveAccess } from './demo-mode.js';
 import { languageCode } from '../shared/menu-languages.js';
 import { guestTab, canonicalTab } from '../shared/customer-service.js';
 import { ensureFinance } from '../shared/finance.js';
@@ -195,6 +196,7 @@ export function operate(s, body, actor) {
 }
 
 export function openStore(filename) {
+  assertLiveAccess();
   if (filename !== ':memory:') mkdirSync(path.dirname(filename), { recursive: true });
   const db = new DatabaseSync(filename);
   db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS app (id INTEGER PRIMARY KEY CHECK(id=1), body TEXT NOT NULL)');

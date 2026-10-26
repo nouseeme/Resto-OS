@@ -1,3 +1,4 @@
+import { demoEnabled, demoStore, demoMiddleware } from './demo.js';
 import { queueImageCleanup, createImageCleanup } from './image-cleanup.js';
 import express from 'express';
 import { authenticateStaff, staffStillAllowed, createStaff } from './staff-auth.js';
@@ -15,22 +16,24 @@ import { guestSession } from '../shared/customer-service.js';
 import { reportWorkbook, reportPeriod } from './reports.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const cloud = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY && !process.env.RESTO_DB);
-const imagesEnabled = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY);
-const store = cloud ? openCloudStore() : openStore(process.env.RESTO_DB ?? path.join(root, 'data', 'resto.sqlite'));
-const cleanupMenuImages=createImageCleanup(store,removeMenuImage);
-if (process.env.VERCEL && !cloud) throw new Error('Supabase configuration is required on Vercel.');
+export const cloud = !demoEnabled && Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY && !process.env.RESTO_DB);
+const imagesEnabled = !demoEnabled && Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY);
+const store = demoEnabled ? demoStore : cloud ? openCloudStore() : openStore(process.env.RESTO_DB ?? path.join(root, 'data', 'resto.sqlite'));
+const cleanupMenuImages=demoEnabled ? async()=>0 : createImageCleanup(store,removeMenuImage);
+if (process.env.VERCEL && !cloud && !demoEnabled) throw new Error('Supabase configuration is required on Vercel.');
 export const app = express();
 if (process.env.VERCEL) app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.get(['/', '/index.html'], async(req,res)=>res.redirect(302, PORTAL_PATH));
 app.get(STAFF_PATH, (req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow, noarchive');next();});
 app.use(express.json({ limit: '3mb' }));
+app.get('/api/demo-config',(req,res)=>res.set('Cache-Control','no-store').json({demo:demoEnabled}));
+if(demoEnabled) app.use('/api',demoMiddleware);
 const cookies = req => Object.fromEntries((req.headers.cookie ?? '').split(';').filter(x=>x.includes('=')).map(x=>{const p=x.trim().indexOf('=');return [x.trim().slice(0,p),x.trim().slice(p+1)]}));
 const hash = value => createHash('sha256').update(value).digest('hex');
 const secure = process.env.RESTO_SECURE_COOKIE === '1' || Boolean(process.env.VERCEL);
 const cookieOptions = { httpOnly: true, sameSite: 'strict', secure, path: '/' };
-app.get('/api/health', async(req,res) => { await store.read(); res.set('Cache-Control','no-store').json({ok:true,database:cloud?'supabase':'sqlite'}); });
+app.get('/api/health', async(req,res) => { await store.read(); res.set('Cache-Control','no-store').json({ok:true,database:demoEnabled?'demo':cloud?'supabase':'sqlite'}); });
 app.use('/api', async (req, res, next) => {
   res.set('Cache-Control','no-store'); res.set('X-Content-Type-Options', 'nosniff');
   if (req.method !== 'GET') {
@@ -44,6 +47,22 @@ app.use('/api', async (req, res, next) => {
   const session = cookies(req).resto_staff;
   const s = await store.read();
   req.state = s;
+  // Demo sessions belong exclusively to the visitor's browser dataset.
+  if (demoEnabled && req.query.portal !== '1') {
+    const demoToken=hash('demo-browser-session');
+    await store.transaction(state=>{
+      if(!state.users.some(u=>u.id==='demo-staff'))state.users.push({id:'demo-staff',name:'Staf Demo',username:'demo'});
+      let session=state.sessions.find(x=>x.token===demoToken);
+      if(!session){session={token:demoToken,userId:'demo-staff',activeRole:null};state.sessions.push(session)}
+      session.expiresAt=new Date(Date.now()+12*3600000).toISOString();
+    });
+    const current=await store.read();
+    req.state=current;
+    req.staffSession=current.sessions.find(x=>x.token===demoToken);
+    req.staff=current.users.find(x=>x.id==='demo-staff');
+    req.actor=WORKSPACE_ROLES.includes(req.staffSession.activeRole)?{...req.staff,role:req.staffSession.activeRole}:null;
+    return next();
+  }
   let found = session && s.sessions.find(x => x.token === hash(session) && Date.parse(x.expiresAt)>Date.now());
   if (cloud && found && (!found.authUserId || !await staffStillAllowed(found.authUserId))) found = null;
   req.staff = found ? s.users.find(u => u.id === found.userId) : null;
@@ -208,6 +227,6 @@ app.post('/api/menu-import/:step',async(req,res)=>{
 });
 app.use('/api',async(req,res)=>res.status(404).json({error:'Layanan tidak ditemukan.'}));
 app.use((err,req,res,next)=>{if(!err.status) console.error(err);res.status(err.status??500).json({error:err.status?err.message:'Ada kendala pada server. Coba lagi.'});});
-if (!cloud) setInterval(()=>{try{if(store.read().orders.some(o=>o.status==='waiting'&&Date.now()>=Date.parse(o.autoAcceptAt)))store.transaction(s=>tick(s))}catch(e){console.error('Auto-accept gagal',e)}},500).unref();
+if (!cloud && !demoEnabled) setInterval(()=>{try{if(store.read().orders.some(o=>o.status==='waiting'&&Date.now()>=Date.parse(o.autoAcceptAt)))store.transaction(s=>tick(s))}catch(e){console.error('Auto-accept gagal',e)}},500).unref();
 
 export default app;

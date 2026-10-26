@@ -81,3 +81,13 @@ See [deployment and operations](docs/PRODUCTION.md) for Supabase, Vercel, backup
 There is no offline mode, payment gateway, inventory, refund workflow, or background push notification service. Abuse limits are an initial configuration, not a full network defense. Cloud reads currently reconstruct a complete backend snapshot; larger histories need scoped queries and pagination. Verify kitchen audio and touch behavior on real devices before relying on them in service.
 
 Menu descriptions support optional Excel columns such as `Deskripsi [en]`, `Deskripsi [tr]`, and `Deskripsi [ar]` after the five base columns. `Deskripsi` is the Indonesian default. Only descriptions are localized; names, categories and prices stay the same. There is no application language-count limit within the 500 KB/1,000-row import limits. Empty or omitted translations preserve existing values. The portal lists every matching menu regardless of language and falls back per item to its default description. Download the multilingual template from the import dialog.
+
+## Mode demo
+
+Set `APP_DEMO_MODE=true` in the deployment environment and redeploy. On Vercel, apply it only to the intended demo environment/project. Keep production database credentials out of that demo project. `false` or unset preserves normal database behavior (Supabase is required on Vercel).
+
+Demo is selected by the server at runtime. All API operations run against visitor-supplied demo state, stored in browser localStorage and serialized across browser tabs. No demo state enters SQLite, Supabase Auth, Database, or Storage, even when cloud credentials are present. Use “Masuk ruang staf” from the menu to enter `/ruang-staf` without login, then choose Dapur, Garson, or Manajemen. Production still requires login. Use the banner to reset the dataset. Separate browsers have independent datasets; realtime collaboration between devices is not provided. Clearing browser storage resets progress. Demo data is public, editable, and unsuitable for real customer information. Image upload is disabled; bundled image URLs remain available. Spreadsheet import and report export use demo data.
+
+The initial dataset contains 8 menu items / 3 categories, 3 cooking orders, 4 ready for delivery, 5 old receivables (3 partly paid), 6 completed transactions, receipt-backed income, and 6 operating expenses. Dates are relative to first initialization. “Being delivered” uses the app's existing ready/awaiting delivery status until a waiter confirms delivery.
+
+Menu photographs use free Unsplash images under the [Unsplash License](https://unsplash.com/license). Source URLs are recorded in `server/demo-seed.js`; photographs illustrate the fictional dishes and load from images.unsplash.com.

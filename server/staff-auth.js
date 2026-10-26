@@ -1,8 +1,10 @@
+import { assertLiveAccess } from './demo-mode.js';
 import { createClient } from '@supabase/supabase-js';
 import { assert } from './store.js';
 
 // Never share a password-sign-in client with the privileged database client.
 function authClient() {
+  assertLiveAccess();
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
@@ -14,6 +16,7 @@ export function isStaff(user) {
 }
 
 export async function authenticateStaff(email, password, client = authClient()) {
+  assertLiveAccess();
   assert(typeof email === 'string' && email.length <= 254 && typeof password === 'string' && password.length > 0 && password.length <= 200, 'Email atau kata sandi salah.', 401);
   const { data, error } = await client.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   assert(!error && isStaff(data?.user), 'Email atau kata sandi salah, atau akun belum dikonfirmasi.', 401);
@@ -26,12 +29,14 @@ export function staffProfile(user) {
 }
 
 export async function staffStillAllowed(userId, client = authClient()) {
+  assertLiveAccess();
   const { data, error } = await client.auth.admin.getUserById(userId);
   if (error && error.status !== 404 && error.status !== 403) throw Object.assign(new Error('Validasi akun sementara tidak tersedia.'), { status: 503 });
   return !error && isStaff(data?.user);
 }
 
 export async function createStaff({ name, email, password }, save, client = authClient()) {
+  assertLiveAccess();
   assert(typeof name === 'string' && name.trim().length >= 2 && name.length <= 60, 'Nama staf harus 2–60 karakter.');
   assert(typeof email === 'string' && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()), 'Masukkan email yang valid.');
   assert(typeof password === 'string' && password.length >= 10 && password.length <= 200, 'Kata sandi minimal 10 karakter.');
