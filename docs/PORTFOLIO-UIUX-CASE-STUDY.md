@@ -1,238 +1,146 @@
-# restoOS — UI/UX & Product Design
+# restoOS — UI/UX and product design case study
 
-## Gambaran proyek
+[Index](INDEX.md) · [Design system](DESIGN.md) · [Product workflows](01-PRODUCT-AND-WORKFLOWS.md)
 
-restoOS adalah aplikasi web untuk menghubungkan pemesanan pelanggan, pekerjaan dapur, layanan garson, dan pengelolaan restoran. Fokus perancangannya adalah membuat satu rangkaian layanan terasa konsisten, meskipun setiap pengguna memiliki kebutuhan dan cara kerja yang berbeda.
+## 1. Project overview
 
-Pekerjaan desain mencakup penyusunan flow layanan, pembentukan tiga ruang kerja staf, desain portal pelanggan, sistem visual bersama, dan penyempurnaan interaksi. Pendekatannya menggabungkan karakter hospitality yang hangat dengan antarmuka operasional yang mudah dipindai.
+restoOS connects customer ordering, kitchen production, waiter service and management reporting in one restaurant workflow. The design challenge is to maintain a shared service model while giving each user an interface organized around their immediate work.
 
-## 1. Pendekatan desain: satu sistem, empat konteks
+The design includes the customer portal, three staff workspaces, a shared visual system, transaction/portion detail, staged payment, catalog editing/import and responsive compositions. This document describes implemented design choices and a proposed portfolio presentation. It does not claim measured business impact or completed user research.
 
-Keputusan mendasar proyek ini adalah memberi pelanggan, dapur, garson, dan manajemen pengalaman yang mengikuti pekerjaan masing-masing.
+## 2. One system, four working contexts
 
-| Pengguna | Fokus utama | Pendekatan antarmuka |
-|---|---|---|
-| Pelanggan | Memilih makanan dan memesan | Menu fotografis, informasi ringkas, keranjang yang mudah diakses |
-| Dapur | Mengetahui apa yang perlu dimasak | Antrean tiket, catatan per item, dan ringkasan kebutuhan masakan |
-| Garson | Melayani pelanggan sampai selesai | Daftar pelanggan, detail tagihan, dan antrean pengantaran |
-| Manajemen | Memahami bisnis dan mengelola data | Sidebar, ringkasan angka, tabel, filter, dan pengaturan |
+| User | Main question | Interface response |
+| --- | --- | --- |
+| Customer | What should I order, and what is in my cart? | Photographic menu, dish detail, category/search and accessible cart review |
+| Kitchen | What needs preparation, and what is ready? | Tickets, portion notes, two queue stages and aggregated demand |
+| Waiter | Who still needs service or payment? | Customer list, outstanding balances, delivery queue and transaction detail |
+| Management | What happened, and what needs configuration? | Overview, read-only history, ledger, catalog and settings |
 
-Ketiga ruang staf dirancang sebagai workspace dengan komposisi dan navigasi sendiri. Staf memilih ruang ketika login dan dapat berpindah melalui kontrol di dekat logout. Pendekatan ini mendukung situasi ketika satu orang membantu beberapa pekerjaan tanpa membuat satu halaman menampung seluruh kompleksitas restoran.
+The three staff spaces have different navigation/compositions. A session chooser and workspace switch support people who assist in more than one task. This is a workflow decision: all admitted staff can choose all three spaces, so the chooser should not be presented as a permanent permission hierarchy.
 
-## 2. Arah visual: The Ivory Menu Book
+## 3. Visual direction: The Ivory Menu Book
 
-Identitas visual restoOS mengambil inspirasi dari buku menu restoran: permukaan ivory, tinta gelap, judul serif, garis hangat yang tipis, dan aksen merah bata. Karakter ini menjadi penghubung antara pengalaman pelanggan dan ruang operasional staf.
+Ivory paper, dark ink, fine warm rules, editorial serif headings and restrained brick-red actions connect the customer and staff experience. Newsreader gives headings and selected totals an editorial character. Manrope supports controls, dense detail and kitchen production headings.
 
-### Warna yang hangat dan terarah
+Hierarchy comes from type, spacing, dividers and surface tones rather than a stack of elevated cards. Food photography supplies the portal's main imagery; staff screens prioritize names, portion status and actions. Status includes words so meaning does not rely on color.
 
-Ivory (`#f5f1e7`) menjadi kanvas utama, dengan permukaan lebih terang (`#faf7f0`) untuk bidang input dan panel. Teks charcoal (`#2b2923`) menjaga informasi utama tetap kuat. Merah bata (`#a43c2d`) digunakan untuk tindakan utama dan seleksi, sementara hijau herbal (`#405644`) mendukung indikator positif.
+The maintained token reference and component conventions are in [DESIGN.md](DESIGN.md).
 
-Warna aksen dipakai secara hemat agar tombol dan status penting mudah ditemukan. Status juga memiliki label tertulis, sehingga arti informasi tetap jelas tanpa harus mengandalkan warna.
-
-### Dua karakter tipografi
-
-**Newsreader** memberi karakter editorial pada judul, nama hidangan, dan penekanan angka tertentu. **Manrope** digunakan pada kontrol, isi, metadata, dan judul produksi dapur.
-
-Pasangan ini memberi ruang bagi dua kebutuhan: menu terasa seperti bagian dari pengalaman makan, sementara informasi kerja tetap langsung dan mudah dipindai. Angka yang sejajar membantu pembacaan harga, jumlah, dan sisa tagihan.
-
-### Struktur yang tenang
-
-Hierarki dibentuk melalui ukuran teks, jarak, garis pemisah, dan perbedaan tone permukaan. Sudut kontrol dibuat hampir persegi, dan bayangan dibatasi pada elemen yang memang mengambang.
-
-Pendekatan ini menjaga daftar pelanggan, tiket dapur, dan laporan tetap padat tanpa membuat setiap informasi bersaing sebagai kartu yang menonjol. Foto makanan menjadi elemen visual utama pada portal; ruang staf memberi prioritas lebih besar pada informasi dan tindakan.
-
-## 3. Flow umum: dari memilih menu sampai layanan selesai
+## 4. End-to-end service flow
 
 ```text
-Pelanggan memilih menu / garson membantu membuat order
-                         ↓
-             Pesanan masuk ke transaksi
-                         ↓
-                Dapur menyiapkan porsi
-                         ↓
-              Porsi ditandai siap diantar
-                         ↓
-                Garson mengantar makanan
-                         ↓
-              Pembayaran dicatat oleh garson
-                         ↓
-     Transaksi ditutup saat layanan dan tagihan selesai
+Customer or waiter submits an order
+                  ↓
+Order and portions join an active transaction
+                  ↓
+Immediate acceptance into the kitchen queue
+                  ↓
+Kitchen marks individual portions ready
+                  ↓
+Waiter delivers ready portions
+                  ↓
+Transaction closes when every remaining portion is paid and delivered
 ```
 
-Pembayaran dapat terjadi sebelum atau sesudah pengantaran. Karena itu, status makanan dan pembayaran dipisahkan. Makanan yang sudah dibayar tetap muncul sebagai pekerjaan jika belum diantar; makanan yang sudah diantar tetap memiliki tagihan jika belum dibayar.
+Payment may occur before or after delivery. The design therefore separates payment and service state rather than forcing one sequence. A paid portion can still require delivery; a delivered portion can still carry debt.
 
-Model ini diterjemahkan menjadi tiga tingkat informasi: **transaksi** sebagai kumpulan layanan pelanggan, **pesanan** sebagai satu kiriman bertimestamp, dan **porsi** sebagai unit yang diproses. Pesanan tambahan tetap berada dalam transaksi yang sama, sementara setiap kiriman mempertahankan identitasnya.
+Three levels make this understandable: transaction as the customer grouping, order as one timestamped submission, and portion as the actionable serving. Additional submissions retain their own identity inside the same open transaction.
 
-## 4. Pengalaman pelanggan: eksplorasi dulu, identitas saat memesan
+## 5. Customer experience
 
 ```text
-Buka menu → pilih kategori/cari hidangan → lihat detail
-→ tambah ke keranjang → atur jumlah dan catatan
-→ isi nama → review total → kirim pesanan
+Open menu → browse/search → inspect a dish → add to cart
+→ adjust quantities/notes → provide a name → review → submit
 ```
 
-Portal dapat digunakan tanpa akun. Pelanggan langsung melihat menu; nama baru dibutuhkan ketika hendak memesan. Ini menghindari langkah awal yang tidak membantu pelanggan memilih makanan.
+Browsing requires no account. Identity is requested at ordering time. Menu cards combine imagery, name, description, price and add action; a dialog reveals longer content without abandoning the list.
 
-Kartu hidangan menggabungkan foto, nama, deskripsi singkat, harga, dan tombol tambah. Posisi foto serta area harga/tombol diselaraskan agar menu mudah dibandingkan. Detail lengkap dibuka melalui dialog, sehingga pelanggan dapat membaca lebih jauh tanpa kehilangan konteks daftar.
+A desktop side cart connects exploration with review. A mobile fixed action exposes portion count/total and opens the cart dialog. State updates immediately and motion acknowledges the action.
 
-Pada desktop, keranjang ditempatkan di samping menu dan tetap terlihat saat menggulir. Pada mobile, tombol tetap di bawah menampilkan jumlah porsi dan total, lalu membuka keranjang untuk review. Keduanya menjaga hubungan antara aktivitas memilih dan hasil pilihan.
+Current portal responses deliberately exclude order history, outstanding balances and payment detail. Customers contact staff for those. Additional orders attach to the active session through ownership checks. Closure clears drafts/request identity so an old cart does not leak into a new visit.
 
-Pesanan tambahan menggunakan flow yang sama dan mengikuti transaksi aktif. Label **Total pesanan baru** dibedakan dari **Sisa tagihan**, supaya pelanggan tidak mencampur item yang masih di keranjang dengan pesanan yang sudah tercatat.
+Unavailable items, price changes, ordering pause and stale sessions are explained in relation to the customer's next action. A paused restaurant preserves the draft rather than implying submission succeeded.
 
-Kondisi seperti menu habis, harga berubah, atau pemesanan dijeda diberikan penjelasan yang langsung berkaitan dengan tindakan pelanggan. Draft portal dipertahankan saat jeda, sementara sesi yang sudah selesai direset untuk memulai transaksi berikutnya dengan jelas.
+## 6. Staff experience
 
-## 5. Pengalaman staf: tampilan mengikuti objek pekerjaan
+### Waiter: customer-centered service
 
-### Garson — pelanggan sebagai titik masuk
+The shared customer list groups active service above older debt. Both groups remain visible/searchable together. The five-hour distinction is presentation, not automatic closure. A customer's balance still includes older orders.
 
-```text
-Daftar pelanggan → buka transaksi → tambah order / lihat tagihan
-→ antar porsi siap → catat pembayaran → kewajiban selesai
-```
+One order-creation entry searches active transactions and offers a new transaction when appropriate. Transaction detail separates each submission, portion state and payment record. Payments can settle selected portions or the remaining portions of one order.
 
-Daftar pelanggan menjadi pusat layanan karena garson perlu menjawab dua pertanyaan: siapa yang masih dilayani, dan apa yang masih perlu diselesaikan?
+Merging multiple transactions uses explicit review and survivor choice because it changes identity/balance grouping. The implementation preserves underlying order/payment records and does not provide unmerge.
 
-**Order aktif** dan **Piutang lama** ditampilkan sebagai kelompok vertikal dalam satu daftar. Keduanya dapat dipindai dan dicari bersama. Total sisa tagihan terlihat pada baris pelanggan; rincian tiap pesanan tersedia setelah transaksi dibuka.
+### Kitchen: portions as work
 
-Satu tombol **Buat order** membawa staf ke pencarian transaksi aktif atau pembuatan transaksi baru. Ini mengurangi percabangan awal dan membantu mencegah order tambahan masuk ke transaksi yang salah.
+Tickets put customer identity, order time, items and notes near the production controls. “Dimasak” and “Menunggu Diantar” distinguish unfinished preparation from food awaiting waiter pickup. New submissions are accepted immediately; a mandatory manual acceptance step is not part of the current primary flow.
 
-Pembayaran tersedia per porsi atau seluruh sisa satu pesanan. Untuk transaksi ganda, penggabungan menggunakan tahap review, pemilihan nama utama, dan konfirmasi konsekuensi. Tingkat kehati-hatian interaksi mengikuti besarnya dampak tindakan.
+Portions can become ready individually. Aggregated menu demand helps staff see the total workload while actions remain on tickets, preserving customer/note context.
 
-### Dapur — porsi sebagai unit pekerjaan
+### Management: overview to explanation
 
-```text
-Order masuk → terima → baca item dan catatan
-→ siapkan porsi → tandai selesai → tunggu pengantaran
-```
+The sidebar anchors overview, history, finance, catalog and settings. The overview separates order value, received money and outstanding obligations. Read-only history supports investigation without mixing in operational actions.
 
-Dapur menggunakan kanvas lebar dengan tiket pesanan. Nama pelanggan, identitas order, waktu, item, dan catatan ditempatkan dekat dengan tindakan produksi.
+Catalog editing favors a comparison table. Import previews explain creates/updates and row problems before atomic commit. Finance combines receipts and paid expenses while keeping event dates and classifications explicit.
 
-Antrean dibagi menjadi **Dimasak** dan **Menunggu Diantar**. Pemisahan ini membedakan pekerjaan yang masih perlu diproduksi dari makanan yang sudah siap tetapi belum diambil garson.
+## 7. Interaction and responsive design
 
-Porsi dapat diselesaikan satu per satu agar minuman atau hidangan yang lebih cepat siap tidak harus menunggu seluruh order. Ringkasan kebutuhan per menu memberi pandangan agregat lintas tiket, sementara tindakan tetap berada pada tiket agar konteks pelanggan dan catatan tidak hilang.
+Portal motion connects adding a dish with cart acknowledgement. Category changes and values have deliberate transitions; staff interactions remain restrained. Reduced-motion paths shorten or skip spatial effects. Source values, rather than historical timing claims, are recorded in the design-system guide.
 
-### Manajemen — ringkasan menuju detail
+Responsive changes preserve the job: side cart becomes a fixed mobile entry; kitchen demand becomes collapsible; management sidebar becomes a drawer; transaction amounts stack; wide import tables scroll inside their own area.
 
-```text
-Ringkasan bisnis → pilih periode → baca kondisi restoran
-→ telusuri transaksi / keuangan → kelola katalog dan pengaturan
-```
+Shared buttons, fields, focus, dialogs and status vocabulary maintain one product identity across different layouts. These implementation choices are not substitutes for current browser/device evaluation.
 
-Sidebar menjaga lokasi modul tetap konsisten saat pengguna berpindah antara laporan, arsip, keuangan, katalog, dan pengaturan. Ringkasan dimulai dari angka utama, lalu menyediakan detail untuk menjelaskan angka tersebut.
+## 8. Feature map for portfolio material
 
-Nilai pesanan, pembayaran diterima, dan sisa piutang dipisahkan karena masing-masing menjawab pertanyaan berbeda. Arsip bersifat baca-saja untuk menjaga kegiatan penelusuran terpisah dari tindakan layanan.
+| Area | Modules worth showing |
+| --- | --- |
+| Customer | Photographic catalog, search/categories, translated descriptions, dish detail, cart review, submission/session feedback |
+| Staff entry | Login, workspace chooser and session switching |
+| Waiter | Customer grouping, order creation, transaction detail, staged payment, eligible cancellation, merge review and delivery |
+| Kitchen | Ticket queue, portion completion, ready queue, demand summary, audio activation, pause and availability |
+| Management | Overview, read-only archive, receipt/expense ledger, catalog editing/images, XLSX preview/export, identity/staff/finance settings |
+| Shared | Responsive composition, visible keyboard focus, status labels and recovery states |
 
-Katalog menggunakan tabel editable karena pekerjaan utamanya adalah membandingkan dan mengubah banyak data. Impor Excel dilengkapi preview perubahan serta masalah per baris, sehingga perubahan massal dapat dipahami sebelum disimpan.
+Customer bill/history screens and delayed acceptance should not appear as current capabilities. Demo is a separate showcase mode with fictional data, not evidence that normal installations contain sample restaurant data.
 
-## 6. Interaksi: ekspresif untuk pelanggan, ringkas untuk staf
+## 9. Suggested design artifacts
 
-Motion portal disempurnakan melalui beberapa iterasi. Arah akhirnya menekankan easing yang lebih halus, gerak kecil, dan feedback yang terasa elegan. Hover foto dibuat lembut, pergantian kategori diberi transisi, dan penambahan item menghubungkan tindakan dengan keranjang.
+| Artifact | Story it explains |
+| --- | --- |
+| Product map | Four contexts connected through one service model |
+| Main user flow | Handoffs from submission through preparation, delivery and settlement |
+| Workspace comparison | Consistent identity with task-specific information architecture |
+| Visual-system excerpt | Color/type/components applied across browsing and operations |
+| Desktop/mobile pair | Preserved priorities under a different composition |
+| Interaction recording | Immediate state change with visual acknowledgement |
+| Complex-flow sequence | Partial settlement or transaction merge with review |
+| Catalog/import sequence | Preventing bulk-edit mistakes before saving |
 
-Nilai keranjang diperbarui segera; gerak berfungsi sebagai pengakuan visual. Feedback **Ditambah**, perubahan jumlah, dan total membantu pelanggan memahami hasil kliknya.
+Use a short recording for animation rather than trying to prove motion quality with a still image. Do not imply a usability study, conversion lift or service-time improvement without actual measurements.
 
-Ruang staf menggunakan gerak yang lebih minimal karena tindakan dilakukan berulang. Kejelasan status dan kesiapan tindakan lebih diutamakan daripada ekspresi visual. Penyesuaian reduced motion tersedia untuk mengurangi gerakan sesuai preferensi perangkat.
+## 10. Screenshot plan
 
-## 7. Adaptasi layar dan konsistensi pengalaman
+No screenshots were captured as part of this documentation update. The following is a capture plan, not a set of delivered assets.
 
-Responsive design mempertahankan prioritas tugas sambil mengubah komposisinya:
+| Priority | Capture | State and annotation focus |
+| --- | --- | --- |
+| 1 | Desktop portal | Consistent food images and populated cart; connect browsing and review |
+| 2 | Mobile portal/cart pair | Fixed cart entry and review dialog |
+| 3 | Workspace chooser | Three tasks introduced together, with visible account context |
+| 4 | Customer list | Active/older-debt groups with coherent balances and service states |
+| 5 | Transaction and payment detail | Two submissions and partially settled portions; explain grouping and obligations |
+| 6 | Kitchen queue | Several tickets/notes and aggregate demand; explain local and global context |
+| 7 | Delivery queue | Ready portions across customers; explain the kitchen/waiter handoff |
+| 8 | Management overview | Internally consistent sales, receipts, debt and service metrics |
 
-- **Portal:** keranjang samping menjadi akses tetap di bawah pada mobile.
-- **Dapur:** ringkasan samping menjadi bagian yang dapat dibuka di atas antrean.
-- **Manajemen:** sidebar menjadi drawer, sementara tabel lebar memiliki area gulir sendiri.
-- **Detail transaksi:** informasi nominal dan rincian disusun ulang agar tetap terbaca pada layar kecil.
+Supporting crops can show dish detail, customer search, merge review, catalog editing, import errors, finance filters, identity settings and an empty/error state.
 
-Pola bersama—tombol, input, dialog, fokus keyboard, label status, dan feedback—menjaga rasa satu produk meskipun ruang kerjanya berbeda. Target aksi utama dibuat cukup besar untuk interaksi sentuh, sementara teks dan ikon saling melengkapi dalam menjelaskan tindakan.
+Use fictional data consistently across screenshots. Preserve customer/order identity from portal through service and payment. Present the portal first, then the service flow and workspaces, followed by complex interactions and responsive/system details. Keep annotations tied to visible decisions rather than generic claims.
 
-## 8. Modul dan fitur yang dirancang
+## 11. Evidence and limits
 
-Daftar ini memetakan bagian produk yang bisa diangkat menjadi materi portofolio. Beberapa fitur merupakan bagian dari halaman atau dialog yang sama, sehingga tidak semuanya perlu dijadikan screenshot terpisah.
+This case study was refreshed against the current repository on 28 October 2026. It describes source-visible behavior, not a live deployment verification. There is no measured efficiency/satisfaction outcome, new screenshot session or accessibility certification asserted here.
 
-| Area | Modul | Fitur utama |
-|---|---|---|
-| Pelanggan | Menu publik | Foto hidangan, kategori, pencarian, harga, ketersediaan, dan pilihan bahasa deskripsi |
-| Pelanggan | Detail hidangan | Foto dan deskripsi lengkap dalam dialog, harga, serta tambah ke pesanan |
-| Pelanggan | Keranjang | Jumlah porsi, catatan untuk dapur, nama pelanggan, review total, dan pengiriman pesanan |
-| Pelanggan | Tagihan dan sesi | Sisa tagihan, pesanan tambahan pada transaksi aktif, serta penutupan sesi setelah layanan selesai |
-| Staf | Login dan pemilih workspace | Masuk akun, memilih Dapur/Garson/Manajemen, berpindah ruang kerja, dan logout |
-| Garson | Daftar pelanggan | Pencarian, kelompok Order aktif dan Piutang lama, total tagihan, seleksi, dan penggabungan pelanggan |
-| Garson | Buat order | Cari transaksi aktif atau buat transaksi baru, pilih menu, atur porsi dan catatan, kirim ke dapur |
-| Garson | Detail transaksi | Rincian tiap pesanan dan porsi, status layanan, sisa tagihan, edit nama, dan tambah pesanan |
-| Garson | Pembayaran dan pembatalan | Catat pembayaran per porsi atau sisa pesanan, pilih metode, serta batalkan porsi yang memenuhi aturan |
-| Garson | Pesanan diantar | Daftar porsi siap, identitas pelanggan, waktu siap, dan konfirmasi sudah diantar |
-| Dapur | Antrean dapur | Tiket pesanan, penerimaan order, catatan masakan, penyelesaian per porsi, dan tab Menunggu Diantar |
-| Dapur | Ringkasan masakan | Kebutuhan per menu dengan pemisahan Belum mulai dan Dimasak |
-| Dapur | Kontrol penerimaan | Pemberitahuan suara dan jeda/buka pemesanan baru |
-| Dapur & Garson | Ketersediaan | Pencarian menu dan perubahan Tersedia/Habis untuk pemesanan berikutnya |
-| Manajemen | Ringkasan bisnis | Filter periode, nilai pesanan, pembayaran, piutang, transaksi belum selesai, menu populer, dan rincian keuangan |
-| Manajemen | Arsip transaksi | Pencarian, filter status transaksi, serta detail pesanan dan pembayaran dalam tampilan baca-saja |
-| Manajemen | Keuangan | Ledger penerimaan/pengeluaran, pencatatan pengeluaran, filter, dan ringkasan arus kas |
-| Manajemen | Katalog menu | Edit langsung dalam tabel, tambah/hapus menu, foto, harga, kategori, deskripsi, dan bahasa tambahan |
-| Manajemen | Impor dan ekspor Excel | Template dan preview impor katalog, validasi per baris, serta ekspor laporan terintegrasi |
-| Manajemen | Pengaturan | Identitas restoran, logo dan warna, mata uang, akun staf, kategori pengeluaran, metode pembayaran, dan jejak aktivitas |
-
-## 9. Materi yang bisa diangkat dalam portofolio
-
-Kekuatan proyek ini bisa ditunjukkan melalui beberapa jenis artefak, sehingga presentasi tidak hanya berisi kumpulan layar.
-
-| Materi | Yang diambil dari proyek | Cerita desain yang ditunjukkan |
-|---|---|---|
-| Peta produk | Portal dan tiga workspace staf | Cara menyusun produk untuk pengguna dengan pekerjaan berbeda |
-| User flow utama | Pesan → masak → antar → bayar → selesai | Kesinambungan layanan dan handoff antarpengguna |
-| Perbandingan workspace | Dapur, Garson, dan Manajemen | Konsistensi identitas dengan layout yang mengikuti tugas |
-| Visual system | Palet, pasangan font, tombol, field, status, dan tiket | Cara identitas hospitality diterjemahkan menjadi UI operasional |
-| Responsive pair | Portal desktop/mobile atau dapur desktop/mobile | Cara prioritas informasi dipertahankan ketika komposisi berubah |
-| Interaction sequence | Tambah menu, review keranjang, dan feedback terkirim | Hubungan antara aksi pengguna dan respons sistem |
-| Complex flow | Pembayaran bertahap atau penggabungan pelanggan | Cara menyederhanakan tindakan yang memiliki konsekuensi besar |
-| Data-heavy interface | Katalog editable dan preview impor | Perancangan untuk pekerjaan administratif berulang |
-
-Motion lebih tepat ditunjukkan lewat rekaman pendek daripada screenshot: pilih satu rangkaian tambah menu ke keranjang dan satu pergantian kategori. Screenshot tetap digunakan untuk menjelaskan hierarki dan layout.
-
-## 10. Rekomendasi screenshot showcase
-
-### Screenshot utama
-
-Delapan pilihan berikut cukup untuk membangun cerita dari identitas visual sampai kompleksitas produk. Satu pilihan dapat berupa pasangan layar atau potongan flow.
-
-| Prioritas | Layar yang diambil | Kondisi saat diambil | Fokus anotasi / cerita |
-|---|---|---|---|
-| 1 | Portal pelanggan — desktop | Menu berisi foto yang konsisten; keranjang berisi beberapa item | Karakter ivory dan tipografi editorial; hubungan eksplorasi menu dengan review pesanan |
-| 2 | Portal pelanggan — mobile | Pasangkan daftar menu dengan dialog keranjang yang sudah terisi | Adaptasi keranjang samping menjadi tombol tetap dan review dalam dialog |
-| 3 | Pemilih workspace | Tiga pilihan Dapur, Garson, dan Manajemen terlihat bersama | Titik masuk berdasarkan pekerjaan; pintu menuju tiga komposisi antarmuka |
-| 4 | Daftar pelanggan | Ada Order aktif dan Piutang lama, dengan nominal serta penanda layanan | Pengelompokan dalam satu daftar dan hierarki pelanggan–tagihan |
-| 5 | Detail transaksi + dialog pembayaran | Satu transaksi memiliki dua pesanan; sebagian porsi sudah dibayar | Pemisahan transaksi, pesanan, porsi, dan pembayaran; review nominal sebelum konfirmasi |
-| 6 | Antrean dapur | Beberapa tiket, catatan makanan, porsi berbeda, dan ringkasan masakan | Pemindaian operasional; detail per pelanggan berdampingan dengan kebutuhan agregat |
-| 7 | Pesanan diantar | Beberapa porsi siap dari pesanan yang berbeda | Handoff dapur–garson dan tindakan pengantaran per porsi |
-| 8 | Ringkasan bisnis | Metrik serta daftar/rincian memiliki data yang saling sesuai | Hierarki dari gambaran bisnis menuju detail; perbedaan pesanan, penerimaan, dan piutang |
-
-### Screenshot pendukung
-
-Pilih sesuai bagian cerita yang ingin diperdalam. Layar ini dapat ditampilkan sebagai crop detail agar panjang studi kasus tetap terkendali.
-
-| Layar | Bagian yang ditonjolkan | Kegunaan dalam cerita |
-|---|---|---|
-| Detail hidangan | Foto, deskripsi lengkap, harga, dan CTA | Progressive disclosure: informasi ringkas di daftar, lengkap ketika dibutuhkan |
-| Buat order oleh garson | Pemilih pelanggan dan identitas transaksi tujuan | Satu titik masuk untuk pelanggan baru maupun pesanan tambahan |
-| Review penggabungan | Pelanggan terpilih, nama utama, dan penjelasan konsekuensi | Review sebelum tindakan yang memengaruhi identitas dan tagihan |
-| Katalog menu | Beberapa baris dan field yang sedang diedit | Efisiensi pengeditan langsung serta perbandingan data |
-| Preview impor Excel | Jumlah tambah/perbarui dan contoh masalah baris | Pencegahan kesalahan sebelum perubahan massal |
-| Keuangan | Filter, ledger, dan ringkasan kas | Penyusunan informasi finansial yang padat |
-| Pengaturan identitas | Logo, warna, dan identitas restoran | Fleksibilitas branding dalam sistem visual bersama |
-| Empty/error state | Satu contoh, misalnya pencarian kosong atau harga berubah | Arahan tindakan berikutnya ketika alur ideal terhenti |
-
-### Cara menyusun showcase
-
-Mulai dari **portal pelanggan** sebagai pembuka visual, lalu tampilkan **flow layanan** sebelum masuk ke tiga workspace. Gunakan **detail transaksi dan pembayaran** untuk menjelaskan kompleksitas UX. Akhiri dengan **visual system dan pasangan responsive** untuk menunjukkan konsistensi hasil desain.
-
-Setiap screenshot cukup ditemani satu kalimat keputusan dan dua atau tiga anotasi yang menunjuk langsung ke bagian UI. Contohnya:
-
-> Keranjang tetap terlihat saat pelanggan menjelajahi menu, sehingga pilihan dan total dapat ditinjau tanpa meninggalkan konteks pemesanan.
-
-Untuk menampilkan flow, gunakan nama pelanggan dan pesanan contoh yang sama dari portal, dapur, pengantaran, sampai pembayaran. Gunakan data demo dengan nominal dan status yang konsisten. Screenshot belum disertakan dalam dokumen ini; daftar di atas menjadi panduan pengambilan dan penyusunannya.
-
-## Hasil perancangan
-
-restoOS menghasilkan pengalaman restoran yang terhubung melalui satu model layanan, dengan antarmuka yang disesuaikan untuk pelanggan, dapur, garson, dan manajemen.
-
-Kontribusi desain utamanya terletak pada hubungan antara **karakter visual yang hangat**, **workspace berbasis tugas**, dan **flow yang mempertahankan konteks dari order sampai penyelesaian**. Detail seperti pesanan tambahan, kesiapan per porsi, pembayaran bertahap, dan pemisahan tagihan dari keranjang membuat desain mengikuti kondisi layanan yang tidak selalu berjalan dalam satu urutan lurus.
-
-Dokumentasi ini merangkum hasil perancangan dan implementasi bersama; dampak terhadap efisiensi atau kepuasan pengguna belum dinyatakan sebagai hasil terukur.
+[UI source](../src/main.jsx), [staff workspaces](../src/StaffWorkspaces.jsx), [customer service](../src/Customers.jsx), [motion](../src/publicMenuMotion.js), [domain](../server/store.js), and [read projection](../server/read-model.js) support the current description.
