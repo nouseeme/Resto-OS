@@ -1,6 +1,6 @@
 # 01 — Product and workflows
 
-[Index](INDEX.md) · Next: [System design](02-SYSTEM-DESIGN.md)
+[README](../README.md) · Next: [System design](02-SYSTEM-DESIGN.md)
 
 ## 1. Product purpose and scope
 
@@ -115,4 +115,4 @@ Product targets include 360 px through desktop layouts, 44 px touch targets, vis
 
 ## Implementation references
 
-[Product contract](PRODUCT.md), [domain operations](../server/store.js), [customer grouping and ownership](../shared/customer-service.js), [API](../server/app.js), [finance](../server/finance.js), [menu import](../server/menu-import.js), [application and portal](../src/main.jsx).
+[Product brief](PRODUCT.md), [domain operations](../server/store.js), [customer grouping and ownership](../shared/customer-service.js), [API](../server/app.js), [finance](../server/finance.js), [menu import](../server/menu-import.js), [application and portal](../src/main.jsx).

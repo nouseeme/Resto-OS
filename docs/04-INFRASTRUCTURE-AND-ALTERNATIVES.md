@@ -1,6 +1,6 @@
 # 04 — Infrastructure and alternatives
 
-[Index](INDEX.md) · [Operating runbook](05-SECURITY-OPERATIONS-AND-DEVELOPMENT.md)
+[README](../README.md) · [Operating runbook](05-SECURITY-OPERATIONS-AND-DEVELOPMENT.md)
 
 ## 1. Configured deployment architecture
 

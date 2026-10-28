@@ -1,6 +1,6 @@
 # Asset credits
 
-[Index](INDEX.md)
+[README](../README.md)
 
 ## Fonts
 

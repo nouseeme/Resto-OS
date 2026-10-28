@@ -1,6 +1,6 @@
 # 05 — Security, operations and development
 
-[Index](INDEX.md) · [Infrastructure](04-INFRASTRUCTURE-AND-ALTERNATIVES.md)
+[README](../README.md) · [Infrastructure](04-INFRASTRUCTURE-AND-ALTERNATIVES.md)
 
 ## 1. Security model
 

@@ -2,7 +2,7 @@
 
 A restaurant operations web app connecting customer orders, kitchen preparation, delivery and manual payment in one shared workflow.
 
-This README summarizes the project and provides setup paths. The [documentation index](docs/INDEX.md) leads to the full guides. Documentation is maintained in English; the application interface and spreadsheet identifiers use Indonesian.
+This README serves as the project overview, setup guide and documentation index. Follow the links throughout or use the [documentation map](#documentation-map) for detailed guides. All project documentation must be maintained in English; preserve actual API identifiers, paths, spreadsheet column names and quoted Indonesian interface labels.
 
 ## Contents
 
@@ -50,7 +50,7 @@ Sales follow order dates, receipts follow payment dates, and expenses follow the
 
 **Current limits:** no offline browser operation, payment gateway, ingredient inventory, refunds, expense correction, unmerge or multi-restaurant isolation. Paid/delivered portions cannot be cancelled. Prices are whole-number final amounts in one configured currency; changing currency does not convert historical amounts.
 
-Details: [product and workflows](docs/01-PRODUCT-AND-WORKFLOWS.md), [product contract](docs/PRODUCT.md), and [financial definitions](docs/03-DATA-MODEL.md#6-financial-definitions-and-invariants).
+Details: [product and workflows](docs/01-PRODUCT-AND-WORKFLOWS.md), [product brief](docs/PRODUCT.md), and [financial definitions](docs/03-DATA-MODEL.md#6-financial-definitions-and-invariants).
 
 ## Architecture and data
 
@@ -408,15 +408,16 @@ Details: [operating runbook](docs/05-SECURITY-OPERATIONS-AND-DEVELOPMENT.md) and
 
 | Document | Read for |
 | --- | --- |
-| [Index](docs/INDEX.md) | Reading order, English documentation policy and verification boundaries |
 | [Product and workflows](docs/01-PRODUCT-AND-WORKFLOWS.md) | User journeys, domain terminology and product limits |
 | [System design](docs/02-SYSTEM-DESIGN.md) | Module boundaries, API, concurrency, synchronization and demo isolation |
 | [Data model](docs/03-DATA-MODEL.md) | Entities, physical storage, constraints and financial/reporting definitions |
 | [Infrastructure and alternatives](docs/04-INFRASTRUCTURE-AND-ALTERNATIVES.md) | Deployment topology and additional work for each alternative |
 | [Security and operations](docs/05-SECURITY-OPERATIONS-AND-DEVELOPMENT.md) | Setup, authentication, deployment, maintenance, backups and tests |
-| [Product contract](docs/PRODUCT.md) | Concise behavior commitments |
+| [Product brief](docs/PRODUCT.md) | 5W1H, product scope, decisions and tradeoffs |
 | [Design system](docs/DESIGN.md) | Tokens, layouts, components, motion and accessibility conventions |
 | [UI/UX case study](docs/PORTFOLIO-UIUX-CASE-STUDY.md) | Design rationale and a portfolio capture plan, without claimed measured outcomes |
 | [Asset credits](docs/ASSET-CREDITS.md) | Font licenses and normal/demo photography sources |
 
-Setup examples explain how to operate or adapt the repository; they do not certify an already-configured VPS, provider account or live deployment.
+Documentation was checked against the repository working tree on 28 October 2026. Source configuration does not prove that the same revision, migrations or settings are live. Provider accounts, production data, billing and service availability were not audited. Alternatives are migration designs unless explicitly identified as existing implementations; provider pricing and quotas require current verification.
+
+The documentation refresh passed all 34 local tests on Node 24 and the frontend production build; that does not establish live provider integration, device behavior or accessibility compliance. Setup examples explain how to operate or adapt the repository; they do not certify an already-configured VPS, provider account or live deployment.

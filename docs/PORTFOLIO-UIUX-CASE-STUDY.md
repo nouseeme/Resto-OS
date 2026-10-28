@@ -1,6 +1,6 @@
 # restoOS — UI/UX and product design case study
 
-[Index](INDEX.md) · [Design system](DESIGN.md) · [Product workflows](01-PRODUCT-AND-WORKFLOWS.md)
+[README](../README.md) · [Design system](DESIGN.md) · [Product workflows](01-PRODUCT-AND-WORKFLOWS.md)
 
 ## 1. Project overview
 

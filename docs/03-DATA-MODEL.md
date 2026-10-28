@@ -1,6 +1,6 @@
 # 03 — Data model
 
-[Index](INDEX.md) · [System design](02-SYSTEM-DESIGN.md)
+[README](../README.md) · [System design](02-SYSTEM-DESIGN.md)
 
 ## 1. Logical relationships
 

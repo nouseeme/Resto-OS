@@ -1,6 +1,6 @@
 # 02 — System design
 
-[Index](INDEX.md) · [Data model](03-DATA-MODEL.md) · [Infrastructure](04-INFRASTRUCTURE-AND-ALTERNATIVES.md)
+[README](../README.md) · [Data model](03-DATA-MODEL.md) · [Infrastructure](04-INFRASTRUCTURE-AND-ALTERNATIVES.md)
 
 ## 1. Architecture
 

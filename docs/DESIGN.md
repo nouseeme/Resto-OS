@@ -102,7 +102,7 @@ components:
 
 # Design system: restoOS
 
-[Index](INDEX.md) · [Product contract](PRODUCT.md) · [UI/UX case study](PORTFOLIO-UIUX-CASE-STUDY.md)
+[README](../README.md) · [Product brief](PRODUCT.md) · [UI/UX case study](PORTFOLIO-UIUX-CASE-STUDY.md)
 
 ## 1. Direction: The Ivory Menu Book
 
