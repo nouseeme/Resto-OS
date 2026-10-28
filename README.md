@@ -1,11 +1,12 @@
 # restoOS
 
-A restaurant operations web app connecting customer orders, kitchen preparation, delivery and manual payment in one shared workflow.
+An opensource, self-hostable restaurant operations web app connecting customer orders, kitchen preparation, delivery and manual payment in one shared workflow.
 
 This README serves as the project overview, setup guide and documentation index. Follow the links throughout or use the [documentation map](#documentation-map) for detailed guides. All project documentation must be maintained in English; preserve actual API identifiers, paths, spreadsheet column names and quoted Indonesian interface labels.
 
 ## Contents
 
+- [Background and purpose](#background-and-purpose)
 - [What the application does](#what-the-application-does)
 - [Architecture and data](#architecture-and-data)
 - [Choose a setup](#choose-a-setup)
@@ -19,6 +20,16 @@ This README serves as the project overview, setup guide and documentation index.
 - [Demo mode](#demo-mode)
 - [Maintenance, backup and recovery](#maintenance-backup-and-recovery)
 - [Documentation map](#documentation-map)
+
+## Background and purpose
+
+restoOS was created to help **small restaurants go digital while keeping control of their software and data**. Its purpose is to offer an open-source, self-hostable platform that owners can run on their own equipment or infrastructure, without a mandatory software subscription or dependence on a single platform provider.
+
+The goal is to make digital operations accessible without requiring a restaurant to commit to recurring platform fees. Owners should be able to choose where their data lives, keep usable copies of their records, and decide whether to operate the system themselves or use managed services for convenience.
+
+Self-hosting can avoid mandatory software subscriptions, but hardware, electricity, internet, hosting and maintenance may still have costs. The current application supports standalone Node/SQLite and a Supabase-backed cloud architecture; replacing cloud integrations requires the adaptation described below. Provider independence is a guiding product decision, not a claim that every infrastructure choice is already interchangeable.
+
+Details: [product background and decisions](docs/PRODUCT.md) and [hosting alternatives](docs/04-INFRASTRUCTURE-AND-ALTERNATIVES.md).
 
 ## What the application does
 

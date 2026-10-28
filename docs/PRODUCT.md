@@ -5,6 +5,8 @@
 
 restoOS is a web-based operating workspace for one restaurant and one kitchen. It connects customer ordering, kitchen preparation, waiter service and manual payment through one shared record, while giving each participant an interface organized around their work.
 
+It was created to help small restaurants go digital through an open-source, self-hostable approach: owners should control their data and infrastructure without a mandatory software subscription or dependence on a single platform provider.
+
 The central idea is that **food service and payment are separate obligations**. Customers can order more than once, dishes can become ready individually, and payment can happen before or after delivery. A transaction stays open until every portion is cancelled or both paid and delivered.
 
 The product includes a public menu, three switchable staff workspaces, catalog management, recorded receipts and expenses, and spreadsheet reporting. Its current scope is day-to-day restaurant coordination rather than inventory management, online payment processing or full accounting.
@@ -32,6 +34,16 @@ The main capabilities are:
 - Validated Excel catalog import and integrated XLSX report export.
 
 ## 2. Why does it exist?
+
+### Background: accessible digital operations for small restaurants
+
+The starting motivation is to give small restaurants a practical way to adopt digital operations without having to organize their business around recurring software subscriptions or a provider-controlled platform. Digital ordering and service coordination should be available to an owner who wants to run the software and retain the data themselves.
+
+The product's open-source direction supports inspecting, adapting and maintaining the software. Self-hosting supports choosing where operational records live, using existing equipment or an independently selected server, and retaining control over backups and continuity. Managed cloud services remain an optional operating choice rather than the intended condition for access to digital restaurant tools.
+
+The goal is freedom from mandatory platform fees and avoidable lock-in, not a promise that operation has no costs. Equipment, electricity, connectivity, hosting and administration may still be needed. The current local and cloud implementations provide different capabilities, and replacing a provider integration can require development work.
+
+### Operational problem: connected service without fragmented records
 
 Restaurant service involves several related handoffs. A submitted order becomes kitchen work, prepared food becomes delivery work, and delivered food may still carry a payment obligation. Keeping those records separately makes it harder to determine what remains unfinished.
 
@@ -90,6 +102,7 @@ Browser ownership follows authorized transaction merges. Repeated requests are r
 
 | Decision | Rationale and consequence |
 | --- | --- |
+| Open-source direction and self-hostable data | Helps small restaurants adopt digital tools while retaining control over software, records and infrastructure, without requiring a platform subscription |
 | Account-free customer ordering | Keeps entry lightweight; ownership belongs to a browser credential rather than a recoverable customer account |
 | A submission-focused customer portal | Customers browse and submit; staff handle order history, balances and payments |
 | Transactions group submissions directly | Additional rounds remain together without inventing time-gap sessions |
@@ -131,6 +144,8 @@ Normal new installations start empty, with the default restaurant identity and I
 ## 10. System and infrastructure decisions
 
 The configured cloud architecture uses Vercel for the frontend/API and Supabase for PostgreSQL, staff Auth, media Storage and Realtime. This combines persistent business state and supporting services, while coupling the application to their integration contracts.
+
+These managed services are implementation choices for convenient operation, not the product's ownership model. The guiding direction is to preserve a self-hosted path and reduce avoidable provider dependence. Existing integrations still need deliberate replacement or self-hosting work; choosing an open-source direction does not by itself remove technical coupling.
 
 A standalone Node entry supports local or VPS hosting. SQLite is the existing local persistence option; it stores a serialized state document and uses local authentication. Cloud PostgreSQL separates entities into private tables with JSONB payloads, selected relational constraints and indexes. The two adapters share a logical model but not an identical physical schema.
 
